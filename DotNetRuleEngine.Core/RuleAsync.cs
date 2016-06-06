@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Interface;
@@ -7,13 +8,19 @@ namespace DotNetRuleEngine.Core
 {
     public abstract class RuleAsync<T> : IRuleAsync<T> where T : class, new()
     {
+        private IList<IGeneralRule<T>> Rules { get; set; } = new List<IGeneralRule<T>>();
+
         public T Model { get; set; }
 
         public bool Parallel { get; set; }
 
-        private IList<IGeneralRule<T>> Rules { get; set; } = new List<IGeneralRule<T>>();
-
         public bool IsNested => Rules.Any();
+
+        public bool IsReactive { get; set; }
+
+        public bool IsPreactive { get; set; }
+
+        public Type ObserveRule { get; set; }
 
         public IDependencyResolver DependencyResolver { get; set; }
 

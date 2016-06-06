@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using DotNetRuleEngine.Core.Interface;
 using System.Collections.Generic;
 
@@ -11,6 +12,12 @@ namespace DotNetRuleEngine.Core
         public T Model { get; set; }
 
         public bool IsNested => Rules.Any();
+
+        public bool IsReactive { get; set; }
+
+        public bool IsPreactive { get; set; }
+
+        public Type ObserveRule { get; set; }        
 
         public IDependencyResolver DependencyResolver { get; set; }
 

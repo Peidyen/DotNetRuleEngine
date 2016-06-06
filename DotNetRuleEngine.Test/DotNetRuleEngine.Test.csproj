@@ -78,6 +78,8 @@
     <Compile Include="AsyncRules\ProductNestedRuleAsyncC.cs" />
     <Compile Include="Rules\ProductNestedRuleB.cs" />
     <Compile Include="Rules\ProductNestedRuleC.cs" />
+    <Compile Include="Rules\ProductPreactiveRule.cs" />
+    <Compile Include="Rules\ProductReactiveRule.cs" />
     <Compile Include="Rules\ProductRule.cs" />
     <Compile Include="AsyncRules\ProductRuleAsync.cs" />
     <Compile Include="Rules\ProductRuleError.cs" />
@@ -93,6 +95,8 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="AsyncRules\ProductTryGetValueAsync.cs" />
     <Compile Include="TestParallelRule.cs" />
+    <Compile Include="TestPreactiveRule.cs" />
+    <Compile Include="TestReactiveRule.cs" />
     <Compile Include="TestRule.cs" />
     <Compile Include="TestRuleAsync.cs" />
     <Compile Include="TestNestedRule.cs" />

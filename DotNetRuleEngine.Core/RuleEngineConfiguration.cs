@@ -10,7 +10,7 @@ namespace DotNetRuleEngine.Core
 
         public Guid RuleEngineId { get; set; }
 
-        public bool InvokeNestedRulesFirst { get; set; } = true;
+        public bool InvokeNestedRulesFirst { get; set; }
 
         public RuleEngineConfiguration(IConfiguration<T> configuration)
         {

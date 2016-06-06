@@ -9,6 +9,10 @@ namespace DotNetRuleEngine.Core
         public const string AfterInvoke = "AfterInvoke";
         public const string Invoke = "Invoke";
         public const string Async = "Async";
+        public const string InvokeAsync = Invoke + Async;
+        public const string BeforeInvokeAsync = BeforeInvoke + Async;
+        public const string AfterInvokeAsync = AfterInvoke + Async;
+
         private static readonly TraceSwitch TraceSwitch = 
             new TraceSwitch("RuleEngineRunningRuleSwitch", "RuleEngine running rules", "0");
 

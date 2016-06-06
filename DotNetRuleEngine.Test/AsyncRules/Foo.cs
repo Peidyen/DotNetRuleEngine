@@ -19,8 +19,8 @@ namespace DotNetRuleEngine.Test.AsyncRules
         }
         public override async Task<IRuleResult> InvokeAsync()
         {
-            await Task.Delay(1000);
-            await TryAddAsync("Phone", Task.FromResult<object>(2063995220));
+            await Task.Delay(100);
+            await TryAddAsync("PhoneNumber", Task.FromResult<object>(2064551002));
             return await Task.FromResult<IRuleResult>(null);
         }
     }
@@ -31,16 +31,16 @@ namespace DotNetRuleEngine.Test.AsyncRules
         public override Task InitializeAsync()
         {
             AddRules(new UpdatePhone());
+            Configuration.InvokeNestedRulesFirst = true;
             return Task.FromResult<object>(null);
 
         }
         public override async Task<IRuleResult> InvokeAsync()
         {
-            var phone = await TryGetValueAsync("Phone");
+            var phone = await TryGetValueAsync("PhoneNumber");
             Model.Phone = phone?.ToString();
 
             return await Task.FromResult<IRuleResult>(new RuleResult { Result = Model });
-
         }
     }
 }

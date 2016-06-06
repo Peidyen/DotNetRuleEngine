@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace DotNetRuleEngine.Core.Interface
 {
@@ -8,9 +9,15 @@ namespace DotNetRuleEngine.Core.Interface
 
         bool IsNested { get; }
 
+        bool IsReactive { get; set; }
+
+        bool IsPreactive { get; set; }
+
+        Type ObserveRule { get; }
+
         IDependencyResolver DependencyResolver { get; set; }
 
-        IConfiguration<T> Configuration { get; set;  }        
+        IConfiguration<T> Configuration { get; set;  }
 
         ICollection<IGeneralRule<T>> GetRules();
 
