@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="DotNetRuleEngine : DotNetRuleEngine">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>DotNetRuleEngine</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/ayayalar/DotNetRuleEngine">View on GitHub</a>
+
+          <h1 id="project_title">DotNetRuleEngine</h1>
+          <h2 id="project_tagline">DotNetRuleEngine</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/ayayalar/DotNetRuleEngine/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/ayayalar/DotNetRuleEngine/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <blockquote>
+<p>DotNetRuleEngine allows you to write your business logic as series of rules to keep your code clean and structured. Supports both <strong>synchronous</strong> and <strong>asynchronous</strong> execution and it is <strong>S.O.L.I.D</strong> compliant.</p>
+</blockquote>
+
+<h3>
+<a id="a-few-reasons-use-dotnetruleengine" class="anchor" href="#a-few-reasons-use-dotnetruleengine" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>A few reasons use DotNetRuleEngine</h3>
+
+<ul>
+<li>S.O.L.I.D</li>
+<li>Separation of Concern.</li>
+<li>Encapsulates varying behavior. Such as business rules.</li>
+<li>Easy to maintain.</li>
+<li>Testable code.</li>
+</ul>
+
+<p>Nuget package available at: <a href="https://www.nuget.org/packages/DotNetRuleEngine" title="DotNetRuleEngine">DotNetRuleEngine</a></p>
+
+<h4>
+<a id="install-dotnetruleengine" class="anchor" href="#install-dotnetruleengine" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Install DotNetRuleEngine</h4>
+
+<div class="highlight highlight-source-cs"><pre>PM&gt; Install-Package DotNetRuleEngine</pre></div>
+
+<h4>
+<a id="create-rules" class="anchor" href="#create-rules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create Rule(s)</h4>
+
+<p><em>Create a rule to update FreeShipping attribute if the amount is greater than $50.00</em></p>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">QualifiesForFreeShipping</span>: <span class="pl-k">Rule</span>&lt;<span class="pl-k">Order</span>&gt;
+{   
+    <span class="pl-k">public</span> <span class="pl-k">override</span> IRuleResult <span class="pl-en">Invoke</span>()
+    {
+        <span class="pl-c">// Order instance available through the model property.</span>
+        <span class="pl-k">if</span> (Model.Total &gt; <span class="pl-c1">50.</span>0m)
+        {
+            Model.FreeShipping = <span class="pl-c1">true</span>;
+        }
+
+        <span class="pl-k">return</span> <span class="pl-c1">null</span>;
+    }
+}</pre></div>
+
+<h4>
+<a id="invoke-rules" class="anchor" href="#invoke-rules" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Invoke Rule(s)</h4>
+
+<div class="highlight highlight-source-cs"><pre>
+Order order = <span class="pl-k">new</span> Order { Id = <span class="pl-c1">1</span>, Total = <span class="pl-c1">79.99</span> };
+
+<span class="pl-c">// Pass order instance to RuleEngine.</span>
+<span class="pl-k">var</span> ruleResults = RuleEngine&lt;Order&gt;.GetInstance(order)
+    .ApplyRules(<span class="pl-k">new</span> QualifiesForFreeShipping())
+    .Execute()</pre></div>
+
+<h6>
+<a id="model-used-as-an-example" class="anchor" href="#model-used-as-an-example" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Model used as an example</h6>
+
+<div class="highlight highlight-source-cs"><pre><span class="pl-k">public</span> <span class="pl-k">class</span> <span class="pl-en">Order</span>
+{
+    <span class="pl-k">public</span> <span class="pl-k">int</span> <span class="pl-en">Id</span> { <span class="pl-k">get</span>; <span class="pl-k">set</span>; }
+    <span class="pl-k">public</span> <span class="pl-k">decimal</span> <span class="pl-en">Total</span> { <span class="pl-k">get</span>; <span class="pl-k">set</span>; }
+    <span class="pl-k">public</span> <span class="pl-k">bool</span> <span class="pl-en">FreeShipping</span> { <span class="pl-k">get</span>; <span class="pl-k">set</span>; }
+}</pre></div>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">DotNetRuleEngine maintained by <a href="https://github.com/ayayalar">ayayalar</a></p>
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
