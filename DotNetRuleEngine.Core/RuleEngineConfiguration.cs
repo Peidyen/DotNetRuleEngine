@@ -6,43 +6,28 @@ namespace DotNetRuleEngine.Core
 {
     internal class RuleEngineConfiguration<T> : IRuleEngineConfiguration<T>
     {
-        private readonly IConfiguration<T> _configuration;
+        public RuleEngineConfiguration(IConfiguration<T> configuration)
+        {
+            Constraint = configuration.Constraint;
+            ExecutionOrder = configuration.ExecutionOrder;
+            Skip = configuration.Skip;
+            Terminate = configuration.Terminate;
+            InvokeNestedRulesFirst = configuration.InvokeNestedRulesFirst;
+            NestedRulesInheritConstraint = configuration.NestedRulesInheritConstraint;
+        }
 
         public Guid RuleEngineId { get; set; }
 
+        public Expression<Predicate<T>> Constraint { get; set; }
+
+        public int? ExecutionOrder { get; set; }
+
+        public bool Skip { get; set; }
+
+        public bool? Terminate { get; set; }
+
         public bool InvokeNestedRulesFirst { get; set; }
 
-        public RuleEngineConfiguration(IConfiguration<T> configuration)
-        {
-            _configuration = configuration;
-        }
-
-        public int? ExecutionOrder
-        {
-            get { return _configuration.ExecutionOrder; }
-
-            set { _configuration.ExecutionOrder = value; }
-        }
-
-        public bool Skip
-        {
-            get { return _configuration.Skip; }
-
-            set { _configuration.Skip = value; }
-        }
-
-        public bool? Terminate
-        {
-            get { return _configuration.Terminate; }
-
-            set { _configuration.Terminate = value; }
-        }
-
-        Expression<Predicate<T>> IConfiguration<T>.Constraint
-        {
-            get { return _configuration.Constraint; }
-
-            set { _configuration.Constraint = value; }
-        }
+        public bool NestedRulesInheritConstraint { get; set; }
     }
 }

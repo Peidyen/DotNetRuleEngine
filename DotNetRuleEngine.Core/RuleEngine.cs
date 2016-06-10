@@ -46,7 +46,7 @@ namespace DotNetRuleEngine.Core
             new RuleEngine<T> { _instance = instance, _dependencyResolver = dependencyResolver };
 
         /// <summary>
-        /// Used to add rules to rule engine.
+        /// Used to add rules to nestingRule engine.
         /// </summary>
         /// <param name="rules">Rule(s) list.</param>
         public void AddRules(params IGeneralRule<T>[] rules) => _rules.AddRange(rules);
@@ -123,12 +123,12 @@ namespace DotNetRuleEngine.Core
 
                     UpdateRuleEngineConfiguration(rule.Configuration);
 
-                    Execute(GetReactiveRules(rule));                   
+                    Execute(GetReactiveRules(rule));
                 }
 
                 InvokeNestedRules(!rule.Configuration.InvokeNestedRulesFirst, rule);
             }
-        }        
+        }
 
         private async Task ExecuteAsyncRules(IEnumerable<IGeneralRule<T>> rules)
         {
@@ -153,7 +153,7 @@ namespace DotNetRuleEngine.Core
                     var ruleResult = await asyncRule.InvokeAsync();
 
                     TraceMessage.Verbose(asyncRule, TraceMessage.AfterInvokeAsync);
-                    await asyncRule.AfterInvokeAsync();                    
+                    await asyncRule.AfterInvokeAsync();
 
                     UpdateRuleEngineConfiguration(asyncRule.Configuration);
 
@@ -179,7 +179,7 @@ namespace DotNetRuleEngine.Core
                     await ExecuteAsyncRules(GetPreactiveRules(pRule));
 
                     _parallelRuleResults.Add(Task.Run(async () =>
-                    {                       
+                    {
                         TraceMessage.Verbose(pRule, TraceMessage.BeforeInvokeAsync);
                         await pRule.BeforeInvokeAsync();
 
@@ -203,23 +203,53 @@ namespace DotNetRuleEngine.Core
             }
         }
 
-        private IEnumerable<IGeneralRule<T>> GetReactiveRules(IGeneralRule<T> rule) =>
-            _rules.Where(r => r.IsReactive && r.ObserveRule == rule.GetType());
+        private IEnumerable<IGeneralRule<T>> GetReactiveRules(IGeneralRule<T> rule)
+        {
+            var reactiveRules = new List<IGeneralRule<T>>();
+            GetReactiveRules(rule, _rules, reactiveRules);
 
-        private IEnumerable<IGeneralRule<T>> GetPreactiveRules(IGeneralRule<T> rule) =>
-            _rules.Where(r => r.IsPreactive && r.ObserveRule == rule.GetType());
+            return reactiveRules;
+        }
+
+        private IEnumerable<IGeneralRule<T>> GetPreactiveRules(IGeneralRule<T> rule)
+        {
+            var preactiveRules = new List<IGeneralRule<T>>();
+            GetPreactiveRules(rule, _rules, preactiveRules);
+
+            return preactiveRules;
+        }
+
+        private static void GetReactiveRules(IGeneralRule<T> rule, IEnumerable<IGeneralRule<T>> rules,
+            ICollection<IGeneralRule<T>> reactiveRules)
+        {
+            foreach (var r in rules)
+            {
+                if (r.IsReactive && r.ObserveRule == rule.GetType()) reactiveRules.Add(r);
+                if (r.IsNested) GetReactiveRules(rule, r.GetRules(), reactiveRules);
+            }
+        }
+
+        private static void GetPreactiveRules(IGeneralRule<T> rule, IEnumerable<IGeneralRule<T>> rules,
+            ICollection<IGeneralRule<T>> preactiveRules)
+        {
+            foreach (var r in rules)
+            {
+                if (r.IsPreactive && r.ObserveRule == rule.GetType()) preactiveRules.Add(r);
+                if (r.IsNested) GetPreactiveRules(rule, r.GetRules(), preactiveRules);
+            }
+        }
 
         private static IEnumerable<IGeneralRule<T>> FilterActivatingRules(IEnumerable<IGeneralRule<T>> rules) =>
             rules.Where(r => !r.IsReactive && !r.IsPreactive);
 
         private async Task InvokeNestedRulesAsync(bool invokeNestedRules, IGeneralRule<T> rule)
         {
-            if (invokeNestedRules && rule.IsNested) await ExecuteAsyncRules(rule.GetRules());
+            if (invokeNestedRules && rule.IsNested) await ExecuteAsyncRules(FilterActivatingRules(rule.GetRules()));
         }
 
         private void InvokeNestedRules(bool invokeNestedRules, IGeneralRule<T> rule)
         {
-            if (invokeNestedRules && rule.IsNested) Execute(OrderByExecutionOrder(rule.GetRules()));
+            if (invokeNestedRules && rule.IsNested) Execute(FilterActivatingRules(OrderByExecutionOrder(rule.GetRules())));
         }
 
         private void ValidateInstance()
@@ -229,33 +259,42 @@ namespace DotNetRuleEngine.Core
 
         private bool Constrained(Expression<Predicate<T>> predicate) => predicate == null || predicate.Compile().Invoke(_instance);
 
-        private void Initialize(IEnumerable<IGeneralRule<T>> rules)
+        private void Initialize(IEnumerable<IGeneralRule<T>> rules, IGeneralRule<T> nestingRule = null)
         {
-            foreach (var rule in rules.OfType<IRule<T>>())
+            foreach (var r in rules.OfType<IRule<T>>())
             {
-                rule.Model = _instance;
-                rule.Configuration = new RuleEngineConfiguration<T>(rule.Configuration) { RuleEngineId = _ruleEngineId };
+                Initialize(r, nestingRule);
 
-                rule.DependencyResolver = _dependencyResolver ?? new NullDependencyResolver();
+                r.Initialize();
 
-                rule.Initialize();
-
-                if (rule.IsNested) Initialize(rule.GetRules());
+                if (r.IsNested) Initialize(r.GetRules(), r);
             }
         }
 
-        private async Task InitializeAsync(IEnumerable<IGeneralRule<T>> rules)
+        private async Task InitializeAsync(IEnumerable<IGeneralRule<T>> rules, IGeneralRule<T> nestingRule = null)
         {
-            foreach (var rule in rules.OfType<IRuleAsync<T>>())
+            foreach (var r in rules.OfType<IRuleAsync<T>>())
             {
-                rule.Configuration = new RuleEngineConfiguration<T>(rule.Configuration) { RuleEngineId = _ruleEngineId };
+                Initialize(r, nestingRule);
 
-                rule.DependencyResolver = _dependencyResolver ?? new NullDependencyResolver();
+                await r.InitializeAsync();
 
-                await rule.InitializeAsync();
-
-                if (rule.IsNested) await InitializeAsync(rule.GetRules());
+                if (r.IsNested) await InitializeAsync(r.GetRules(), r);
             }
+        }
+
+        private void Initialize(IGeneralRule<T> rule, IGeneralRule<T> nestingRule)
+        {
+            rule.Model = _instance;
+            rule.Configuration = new RuleEngineConfiguration<T>(rule.Configuration) { RuleEngineId = _ruleEngineId };
+
+            if (nestingRule != null && nestingRule.Configuration.NestedRulesInheritConstraint)
+            {
+                rule.Configuration.Constraint = nestingRule.Configuration.Constraint;
+                rule.Configuration.NestedRulesInheritConstraint = true;
+            }
+
+            rule.DependencyResolver = _dependencyResolver ?? new NullDependencyResolver();
         }
 
         private void AddToRuleResults(IRuleResult ruleResult, string ruleName)

@@ -15,5 +15,7 @@ namespace DotNetRuleEngine.Core
         public int? ExecutionOrder { get; set; }
 
         public bool InvokeNestedRulesFirst { get; set; }
+
+        public bool NestedRulesInheritConstraint { get; set; }
     }
 }
