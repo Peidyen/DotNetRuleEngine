@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using DotNetRuleEngine.Core;
+using DotNetRuleEngine.Core.Interface;
 using DotNetRuleEngine.Test.AsyncRules;
 using DotNetRuleEngine.Test.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -16,6 +18,20 @@ namespace DotNetRuleEngine.Test
             ruleEngineExecutor.AddRules(new ProductRuleAsync());
             var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
             Assert.AreEqual("Product Description", ruleResults.First().Result);
+        }
+
+        [TestMethod]
+        public void TestInvokeAsyncPerf()
+        {
+            List<IGeneralRule<Product>> r = new List<IGeneralRule<Product>>();
+            for (int i = 0; i < 10000 ; i++)
+            {
+                r.Add(new ProductRuleAsync());
+            }
+            var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
+            ruleEngineExecutor.AddRules(r.ToArray());
+            var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
+            //Assert.AreEqual("Product Description", ruleResults.First().Result);
         }
 
         [TestMethod]

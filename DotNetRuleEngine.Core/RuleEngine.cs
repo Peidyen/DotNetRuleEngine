@@ -16,6 +16,9 @@ namespace DotNetRuleEngine.Core
     {
         private T _instance;
         private IDependencyResolver _dependencyResolver;
+        private ConcurrentDictionary<Type, IList<IGeneralRule<T>>> _reactiveRules;
+        private ConcurrentDictionary<Type, IList<IGeneralRule<T>>> _preactiveRules;
+
         private readonly Guid _ruleEngineId = Guid.NewGuid();
         private readonly RuleEngineConfiguration<T> _ruleEngineConfiguration = new RuleEngineConfiguration<T>(new Configuration<T>());
         private readonly List<IGeneralRule<T>> _rules = new List<IGeneralRule<T>>();
@@ -69,6 +72,9 @@ namespace DotNetRuleEngine.Core
 
             await InitializeAsync(_rules);
 
+            _reactiveRules = GetReactiveRules();
+            _preactiveRules = GetPreactiveRules();
+
             await ExecuteAsyncRules(FilterActivatingRules(_rules));
 
             await Task.WhenAll(_parallelRuleResults);
@@ -93,6 +99,9 @@ namespace DotNetRuleEngine.Core
 
             Initialize(_rules);
 
+            _reactiveRules = GetReactiveRules();
+            _preactiveRules = GetPreactiveRules();
+
             Execute(FilterActivatingRules(_rules));
 
             return _ruleResults.ToArray();
@@ -108,7 +117,7 @@ namespace DotNetRuleEngine.Core
                 {
                     rule.Model = _instance;
 
-                    Execute(GetPreactiveRules(rule));
+                    if (_preactiveRules.ContainsKey(rule.GetType())) Execute(_preactiveRules[rule.GetType()]);
 
                     TraceMessage.Verbose(rule, TraceMessage.BeforeInvoke);
                     rule.BeforeInvoke();
@@ -123,7 +132,7 @@ namespace DotNetRuleEngine.Core
 
                     UpdateRuleEngineConfiguration(rule.Configuration);
 
-                    Execute(GetReactiveRules(rule));
+                    if (_preactiveRules.ContainsKey(rule.GetType())) Execute(_preactiveRules[rule.GetType()]);
                 }
 
                 InvokeNestedRules(!rule.Configuration.InvokeNestedRulesFirst, rule);
@@ -144,7 +153,7 @@ namespace DotNetRuleEngine.Core
                 {
                     asyncRule.Model = _instance;
 
-                    await ExecuteAsyncRules(GetPreactiveRules(asyncRule));
+                    if (_preactiveRules.ContainsKey(asyncRule.GetType())) await ExecuteAsyncRules(_preactiveRules[asyncRule.GetType()]);
 
                     TraceMessage.Verbose(asyncRule, TraceMessage.BeforeInvokeAsync);
                     await asyncRule.BeforeInvokeAsync();
@@ -157,7 +166,7 @@ namespace DotNetRuleEngine.Core
 
                     UpdateRuleEngineConfiguration(asyncRule.Configuration);
 
-                    await ExecuteAsyncRules(GetReactiveRules(asyncRule));
+                    if (_preactiveRules.ContainsKey(asyncRule.GetType())) await ExecuteAsyncRules(_reactiveRules[asyncRule.GetType()]);
 
                     AddToAsyncRuleResults(ruleResult, asyncRule.GetType().Name);
                 }
@@ -176,7 +185,7 @@ namespace DotNetRuleEngine.Core
                 {
                     pRule.Model = _instance;
 
-                    await ExecuteAsyncRules(GetPreactiveRules(pRule));
+                    if (_preactiveRules.ContainsKey(pRule.GetType())) await ExecuteAsyncRules(_preactiveRules[pRule.GetType()]);
 
                     _parallelRuleResults.Add(Task.Run(async () =>
                     {
@@ -196,51 +205,65 @@ namespace DotNetRuleEngine.Core
                         return ruleResult;
                     }));
 
-                    await ExecuteAsyncRules(GetReactiveRules(pRule));
+                    if (_preactiveRules.ContainsKey(pRule.GetType())) await ExecuteAsyncRules(_reactiveRules[pRule.GetType()]);
                 }
 
                 await InvokeNestedRulesAsync(!pRule.Configuration.InvokeNestedRulesFirst, pRule);
             }
         }
 
-        private IEnumerable<IGeneralRule<T>> GetReactiveRules(IGeneralRule<T> rule)
+        private ConcurrentDictionary<Type, IList<IGeneralRule<T>>> GetReactiveRules()
         {
-            var reactiveRules = new List<IGeneralRule<T>>();
-            GetReactiveRules(rule, _rules, reactiveRules);
+            var reactiveRules = new ConcurrentDictionary<Type, IList<IGeneralRule<T>>>();
+            GetReactiveRules(_rules, reactiveRules);
 
             return reactiveRules;
         }
 
-        private IEnumerable<IGeneralRule<T>> GetPreactiveRules(IGeneralRule<T> rule)
+        private ConcurrentDictionary<Type, IList<IGeneralRule<T>>> GetPreactiveRules()
         {
-            var preactiveRules = new List<IGeneralRule<T>>();
-            GetPreactiveRules(rule, _rules, preactiveRules);
+            var preactiveRules = new ConcurrentDictionary<Type, IList<IGeneralRule<T>>>();
+            GetPreactiveRules(_rules, preactiveRules);
 
             return preactiveRules;
         }
 
-        private static void GetReactiveRules(IGeneralRule<T> rule, IEnumerable<IGeneralRule<T>> rules,
-            ICollection<IGeneralRule<T>> reactiveRules)
+        private static void GetReactiveRules(IEnumerable<IGeneralRule<T>> rules,
+            ConcurrentDictionary<Type, IList<IGeneralRule<T>>> reactiveRules)
         {
-            foreach (var r in rules)
+            Parallel.ForEach(rules, r =>
             {
-                if (r.IsReactive && r.ObserveRule == rule.GetType()) reactiveRules.Add(r);
-                if (r.IsNested) GetReactiveRules(rule, r.GetRules(), reactiveRules);
-            }
+                if (r.IsReactive)
+                { 
+                    reactiveRules.AddOrUpdate(r.ObserveRule, new[] { r }, (type, list) =>
+                    {
+                        list.Add(r);
+                        return list;
+                    });
+                }
+                if (r.IsNested) GetReactiveRules(r.GetRules(), reactiveRules);
+            });
         }
 
-        private static void GetPreactiveRules(IGeneralRule<T> rule, IEnumerable<IGeneralRule<T>> rules,
-            ICollection<IGeneralRule<T>> preactiveRules)
+        private static void GetPreactiveRules(IEnumerable<IGeneralRule<T>> rules,
+            ConcurrentDictionary<Type, IList<IGeneralRule<T>>> preactiveRules)
         {
-            foreach (var r in rules)
+            Parallel.ForEach(rules, r =>
             {
-                if (r.IsPreactive && r.ObserveRule == rule.GetType()) preactiveRules.Add(r);
-                if (r.IsNested) GetPreactiveRules(rule, r.GetRules(), preactiveRules);
-            }
+                if (r.IsPreactive)
+                {
+                    preactiveRules.AddOrUpdate(r.ObserveRule, new[] { r }, (type, list) =>
+                    {
+                        list.Add(r);
+                        return list;
+                    });
+                }
+                if (r.IsNested) GetPreactiveRules(r.GetRules(), preactiveRules);
+            });
         }
 
         private static IEnumerable<IGeneralRule<T>> FilterActivatingRules(IEnumerable<IGeneralRule<T>> rules) =>
-            rules.Where(r => !r.IsReactive && !r.IsPreactive);
+            rules.Where(r => !r.IsReactive && !r.IsPreactive).AsParallel();
 
         private async Task InvokeNestedRulesAsync(bool invokeNestedRules, IGeneralRule<T> rule)
         {
@@ -355,7 +378,9 @@ namespace DotNetRuleEngine.Core
 
             return rules.OfType<TK>()
                         .Where(r => !r.Configuration.ExecutionOrder.HasValue)
-                        .Where(condition).ToList();
+                        .Where(condition)
+                        .AsParallel()
+                        .ToList();
         }
 
         private static ICollection<TK> GetRulesWithExecutionOrder<TK>(IEnumerable<IGeneralRule<T>> rules,
@@ -364,10 +389,11 @@ namespace DotNetRuleEngine.Core
             condition = condition ?? (k => true);
 
             return rules.OfType<TK>()
-                        .Where(r => r.Configuration.ExecutionOrder.HasValue)
-                        .Where(condition)
-                        .OrderBy(r => r.Configuration.ExecutionOrder)
-                        .ToList();
+                .Where(r => r.Configuration.ExecutionOrder.HasValue)
+                .Where(condition)
+                .OrderBy(r => r.Configuration.ExecutionOrder)
+                .AsParallel()
+                .ToList();
         }
 
         private static IEnumerable<IRuleAsync<T>> GetParallelRules(IEnumerable<IGeneralRule<T>> rules)
@@ -375,6 +401,7 @@ namespace DotNetRuleEngine.Core
             return rules.OfType<IRuleAsync<T>>()
                         .Where(r => r.Parallel && !r.Configuration.ExecutionOrder.HasValue)
                         .OrderBy(r => r.GetType().Name)
+                        .AsParallel()
                         .ToList();
         }
     }
