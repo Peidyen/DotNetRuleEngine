@@ -21,20 +21,6 @@ namespace DotNetRuleEngine.Test
         }
 
         [TestMethod]
-        public void TestInvokeAsyncPerf()
-        {
-            List<IGeneralRule<Product>> r = new List<IGeneralRule<Product>>();
-            for (int i = 0; i < 10000 ; i++)
-            {
-                r.Add(new ProductRuleAsync());
-            }
-            var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
-            ruleEngineExecutor.AddRules(r.ToArray());
-            var ruleResults = ruleEngineExecutor.ExecuteAsync().Result;
-            //Assert.AreEqual("Product Description", ruleResults.First().Result);
-        }
-
-        [TestMethod]
         public void TestBeforeInvokeAsync()
         {
             var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product());
