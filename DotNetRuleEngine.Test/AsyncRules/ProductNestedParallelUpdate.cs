@@ -10,7 +10,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
 
             return Task.FromResult<object>(null);
         }
@@ -27,7 +27,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
             AddRules(new ProductNestedParallelUpdateB1(), new ProductNestedParallelUpdateB2());
 
             return Task.FromResult<object>(null);
@@ -45,7 +45,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
             AddRules(new ProductNestedParallelUpdateB1A());
 
             return Task.FromResult<object>(null);
@@ -63,7 +63,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
             AddRules(new ProductNestedParallelUpdateB1A1A());
 
             return Task.FromResult<object>(null);
@@ -81,7 +81,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
             return Task.FromResult<object>(null);
         }
 
@@ -97,7 +97,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
             AddRules(new ProductNestedParallelUpdateB1A1());
 
             return Task.FromResult<object>(null);
@@ -115,7 +115,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
 
             return Task.FromResult<object>(null);
         }
@@ -132,7 +132,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
 
             return Task.FromResult<object>(null);
         }

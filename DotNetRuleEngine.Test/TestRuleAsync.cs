@@ -1,5 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.Linq;
 using DotNetRuleEngine.Core;
+using DotNetRuleEngine.Core.Interface;
 using DotNetRuleEngine.Test.AsyncRules;
 using DotNetRuleEngine.Test.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

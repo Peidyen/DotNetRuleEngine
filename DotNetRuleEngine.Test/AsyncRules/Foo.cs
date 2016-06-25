@@ -14,7 +14,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
     {
         public override Task InitializeAsync()
         {
-            Parallel = true;
+            IsParallel = true;
             return Task.FromResult<object>(null);
         }
         public override async Task<IRuleResult> InvokeAsync()

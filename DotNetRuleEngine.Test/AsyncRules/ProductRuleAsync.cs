@@ -7,11 +7,9 @@ namespace DotNetRuleEngine.Test.AsyncRules
 {
     class ProductRuleAsync : RuleAsync<Product>
     {
-        public override Task BeforeInvokeAsync()
+        public async override Task BeforeInvokeAsync()
         {
-            TryAddAsync("Description", Task.FromResult<object>("Description"));
-
-            return Task.FromResult<object>(null);
+            await TryAddAsync("Description", Task.FromResult<object>("Description"));
         }
 
         public override async Task<IRuleResult> InvokeAsync()

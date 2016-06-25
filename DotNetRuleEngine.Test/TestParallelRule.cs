@@ -6,7 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace DotNetRuleEngine.Test
 {
     /// <summary>
-    /// Test Parallel Rule
+    /// Test IsParallel Rule
     /// </summary>
     [TestClass]
     public class TestParallelRule

@@ -4,7 +4,7 @@ namespace DotNetRuleEngine.Core.Interface
 {
     public interface IRuleAsync<T> : IGeneralRule<T> where T : class, new()
     {
-        bool Parallel { get; set; }
+        bool IsParallel { get; set; }
 
         Task InitializeAsync();
 

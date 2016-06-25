@@ -12,7 +12,7 @@ namespace DotNetRuleEngine.Core
 
         public T Model { get; set; }
 
-        public bool Parallel { get; set; }
+        public bool IsParallel { get; set; }
 
         public bool IsNested => Rules.Any();
 
