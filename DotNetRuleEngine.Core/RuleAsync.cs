@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Interface;
+using DotNetRuleEngine.Core.Models;
+using DotNetRuleEngine.Core.Services;
 
 namespace DotNetRuleEngine.Core
 {
@@ -22,15 +24,15 @@ namespace DotNetRuleEngine.Core
 
         public Type ObserveRule { get; set; }
 
-        public IDependencyResolver DependencyResolver { get; set; }
+        public IDependencyResolver Resolve { get; set; }
 
         public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 
-        public async Task<object> TryGetValueAsync(string key, int timeoutInMs = RuleDataManager.DefaultTimeoutInMs) => 
-            await RuleDataManager.GetInstance().GetValueAsync(key, Configuration, timeoutInMs);
+        public async Task<object> TryGetValueAsync(string key, int timeoutInMs = RuleDataService.DefaultTimeoutInMs) => 
+            await RuleDataService.GetInstance().GetValueAsync(key, Configuration, timeoutInMs);
 
         public async Task TryAddAsync(string key, Task<object> value) => 
-            await RuleDataManager.GetInstance().AddOrUpdateAsync(key, value, Configuration);
+            await RuleDataService.GetInstance().AddOrUpdateAsync(key, value, Configuration);
 
         public ICollection<IGeneralRule<T>> GetRules() => Rules;
         

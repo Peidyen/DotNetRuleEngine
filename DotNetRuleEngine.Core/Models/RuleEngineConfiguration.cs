@@ -2,7 +2,7 @@
 using System.Linq.Expressions;
 using DotNetRuleEngine.Core.Interface;
 
-namespace DotNetRuleEngine.Core
+namespace DotNetRuleEngine.Core.Models
 {
     internal class RuleEngineConfiguration<T> : IRuleEngineConfiguration<T>
     {

@@ -15,7 +15,7 @@ namespace DotNetRuleEngine.Core.Interface
 
         Type ObserveRule { get; }
 
-        IDependencyResolver DependencyResolver { get; set; }
+        IDependencyResolver Resolve { get; set; }
 
         IConfiguration<T> Configuration { get; set;  }
 

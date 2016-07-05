@@ -1,4 +1,5 @@
 ﻿using DotNetRuleEngine.Core;
+using DotNetRuleEngine.Core.Extensions;
 using DotNetRuleEngine.Test.AsyncRules;
 using DotNetRuleEngine.Test.Models;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

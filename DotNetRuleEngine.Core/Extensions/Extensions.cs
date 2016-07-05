@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Interface;
 
-namespace DotNetRuleEngine.Core
+namespace DotNetRuleEngine.Core.Extensions
 {
     public static class Extensions
     {
@@ -32,7 +32,7 @@ namespace DotNetRuleEngine.Core
             return ruleEngineExecutor;
         }
 
-        public static IEnumerable<IRuleResult> GetErrors(this IEnumerable<IRuleResult> ruleResults) 
+        public static IEnumerable<IRuleResult> GetErrors(this IEnumerable<IRuleResult> ruleResults)
             => ruleResults.Where(r => r.Error != null);
 
         public static bool AnyError(this IEnumerable<IRuleResult> ruleResults) => ruleResults.Any(r => r.Error != null);

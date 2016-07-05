@@ -3,18 +3,15 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Interface;
+using DotNetRuleEngine.Core.Models;
 
-namespace DotNetRuleEngine.Core
+namespace DotNetRuleEngine.Core.Services
 {
-    internal class RuleDataManager
+    internal class RuleDataService
     {
-        
-        private static readonly Lazy<RuleDataManager> DataManager = new Lazy<RuleDataManager>(() => new RuleDataManager(), true);
+        private static readonly Lazy<RuleDataService> DataManager = new Lazy<RuleDataService>(() => new RuleDataService(), true);
 
-        private RuleDataManager()
-        {
-            
-        }
+        private RuleDataService() {}
 
         private Lazy<ConcurrentDictionary<string, Task<object>>> AsyncData { get; } = new Lazy<ConcurrentDictionary<string, Task<object>>>(
             () => new ConcurrentDictionary<string, Task<object>>(), true);
@@ -27,8 +24,8 @@ namespace DotNetRuleEngine.Core
         public async Task AddOrUpdateAsync<T>(string key, Task<object> value, IConfiguration<T> configuration)
         {
             var ruleengineId = GetRuleengineId(configuration);
-
             var keyPair = BuildKey(key, ruleengineId);
+
             await Task.FromResult(AsyncData.Value.AddOrUpdate(keyPair.First(), v => value, (k, v) => value));
         }
 
@@ -43,10 +40,7 @@ namespace DotNetRuleEngine.Core
                 Task<object> value;
                 AsyncData.Value.TryGetValue(keyPair.First(), out value);
 
-                if (value != null)
-                {
-                    return await value;
-                }
+                if (value != null) return await value;
             }
 
             throw new TimeoutException($"Unable to get {key}");
@@ -71,16 +65,13 @@ namespace DotNetRuleEngine.Core
                 object value;
                 Data.Value.TryGetValue(keyPair.First(), out value);
 
-                if (value != null)
-                {
-                    return value;
-                }
+                if (value != null) return value;
             }
 
             throw new TimeoutException($"Unable to get {key}");
         }
 
-        public static RuleDataManager GetInstance() => DataManager.Value;
+        public static RuleDataService GetInstance() => DataManager.Value;
 
         private static string[] BuildKey(string key, string ruleengineId) => new[] { string.Join("_", ruleengineId, key), key };
 

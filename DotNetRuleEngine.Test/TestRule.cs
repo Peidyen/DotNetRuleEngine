@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using DotNetRuleEngine.Core;
+using DotNetRuleEngine.Core.Extensions;
 using DotNetRuleEngine.Test.Models;
 using DotNetRuleEngine.Test.Rules;
 using Microsoft.VisualStudio.TestTools.UnitTesting;

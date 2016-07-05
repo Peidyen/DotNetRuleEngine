@@ -2,6 +2,8 @@
 using System.Linq;
 using DotNetRuleEngine.Core.Interface;
 using System.Collections.Generic;
+using DotNetRuleEngine.Core.Models;
+using DotNetRuleEngine.Core.Services;
 
 namespace DotNetRuleEngine.Core
 {
@@ -19,13 +21,13 @@ namespace DotNetRuleEngine.Core
 
         public Type ObserveRule { get; set; }        
 
-        public IDependencyResolver DependencyResolver { get; set; }
+        public IDependencyResolver Resolve { get; set; }
 
         public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 
-        public object TryGetValue(string key, int timeoutInMs = RuleDataManager.DefaultTimeoutInMs) => RuleDataManager.GetInstance().GetValue(key, Configuration);
+        public object TryGetValue(string key, int timeoutInMs = RuleDataService.DefaultTimeoutInMs) => RuleDataService.GetInstance().GetValue(key, Configuration);
 
-        public void TryAdd(string key, object value) => RuleDataManager.GetInstance().AddOrUpdate(key, value, Configuration);
+        public void TryAdd(string key, object value) => RuleDataService.GetInstance().AddOrUpdate(key, value, Configuration);
 
         public ICollection<IGeneralRule<T>> GetRules() => Rules;       
 

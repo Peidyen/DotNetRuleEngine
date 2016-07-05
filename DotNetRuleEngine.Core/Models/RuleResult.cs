@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Interface;
 
-namespace DotNetRuleEngine.Core
+namespace DotNetRuleEngine.Core.Models
 {
     public class RuleResult : IRuleResult
     {
