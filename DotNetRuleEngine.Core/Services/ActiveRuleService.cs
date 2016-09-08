@@ -7,7 +7,7 @@ using DotNetRuleEngine.Core.Interface;
 
 namespace DotNetRuleEngine.Core.Services
 {
-    internal class ActiveRuleService<T> where T : class, new()
+    internal sealed class ActiveRuleService<T> where T : class, new()
     {
         private readonly IEnumerable<IGeneralRule<T>> _rules;
         private readonly Lazy<ConcurrentDictionary<Type, IList<IGeneralRule<T>>>> _preactiveRules;

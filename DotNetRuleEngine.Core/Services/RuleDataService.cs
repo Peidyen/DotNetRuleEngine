@@ -7,7 +7,7 @@ using DotNetRuleEngine.Core.Models;
 
 namespace DotNetRuleEngine.Core.Services
 {
-    internal class RuleDataService
+    internal sealed class RuleDataService
     {
         private static readonly Lazy<RuleDataService> DataManager = new Lazy<RuleDataService>(() => new RuleDataService(), true);
 

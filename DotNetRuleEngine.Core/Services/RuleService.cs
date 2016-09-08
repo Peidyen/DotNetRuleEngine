@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using DotNetRuleEngine.Core.Extensions;
 using DotNetRuleEngine.Core.Interface;
@@ -12,6 +11,7 @@ namespace DotNetRuleEngine.Core.Services
         private readonly T _model;
         private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
         private readonly ActiveRuleService<T> _activeRuleService;
+        private readonly ICollection<IRuleResult> _ruleResults = new List<IRuleResult>();
 
         public RuleService(T model, IEnumerable<IGeneralRule<T>> rules,
             IRuleEngineConfiguration<T> ruleEngineConfiguration)
@@ -20,8 +20,6 @@ namespace DotNetRuleEngine.Core.Services
             _activeRuleService = new ActiveRuleService<T>(rules);
             _ruleEngineConfiguration = ruleEngineConfiguration;
         }
-
-        public ICollection<IRuleResult> RuleResults { get; } = new List<IRuleResult>();
 
         public void Invoke(IEnumerable<IGeneralRule<T>> rules) => Execute(_activeRuleService.FilterActivatingRules(rules));
 
@@ -55,6 +53,8 @@ namespace DotNetRuleEngine.Core.Services
             }
         }
 
+        public IRuleResult[] GetRuleResults() => _ruleResults.ToArray();
+
         private void InvokeReactiveRules(IRule<T> rule)
         {
             if (_activeRuleService.GetReactiveRules().ContainsKey(rule.GetType()))
@@ -75,7 +75,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             ruleResult.AssignRuleName(ruleName);
 
-            if (ruleResult != null) RuleResults.Add(ruleResult);
+            if (ruleResult != null) _ruleResults.Add(ruleResult);
         }
 
         private void InvokeNestedRules(bool invokeNestedRules, IGeneralRule<T> rule)

@@ -8,7 +8,7 @@ using DotNetRuleEngine.Core.Models;
 
 namespace DotNetRuleEngine.Core.Services
 {
-    public sealed class RuleInitializationService<T> where T : class, new()
+    internal sealed class RuleInitializationService<T> where T : class, new()
     {
         private readonly T _model;
         private readonly Guid _ruleEngineId;
@@ -47,7 +47,7 @@ namespace DotNetRuleEngine.Core.Services
             return Task.WhenAll(initBag);
         }
 
-        public void RuleInitializer(IGeneralRule<T> rule, IGeneralRule<T> nestingRule = null)
+        private void RuleInitializer(IGeneralRule<T> rule, IGeneralRule<T> nestingRule = null)
         {
             rule.Model = _model;
             rule.Configuration = new RuleEngineConfiguration<T>(rule.Configuration) { RuleEngineId = _ruleEngineId };

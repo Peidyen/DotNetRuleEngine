@@ -72,7 +72,7 @@ namespace DotNetRuleEngine.Core
         {
             var rules = GetRules();
 
-            if (!rules.Any()) return _asyncRuleService.AsyncRuleResults.ToArray();
+            if (!rules.Any()) return await _asyncRuleService.GetAsyncRuleResultsAsync();
 
             await new RuleInitializationService<T>(_model, _ruleEngineId, _dependencyResolver).InitializeAsync(rules);
 
@@ -80,7 +80,7 @@ namespace DotNetRuleEngine.Core
 
             await _asyncRuleService.InvokeAsyncRules(rules);
 
-            return await _asyncRuleService.GetAsyncRuleResults();
+            return await _asyncRuleService.GetAsyncRuleResultsAsync();
         }
 
         /// <summary>
@@ -91,7 +91,7 @@ namespace DotNetRuleEngine.Core
         {
             var rules = GetRules();
 
-            if (!rules.Any()) return _ruleService.RuleResults.ToArray();
+            if (!rules.Any()) return _ruleService.GetRuleResults();
 
             new RuleInitializationService<T>(_model, _ruleEngineId, _dependencyResolver).Initialize(rules);
 
@@ -99,7 +99,7 @@ namespace DotNetRuleEngine.Core
 
             _ruleService.Invoke(rules);
 
-            return _ruleService.RuleResults.ToArray();
+            return _ruleService.GetRuleResults();
         }
 
         private List<IGeneralRule<T>> GetRules()

@@ -8,12 +8,13 @@ using DotNetRuleEngine.Core.Models;
 
 namespace DotNetRuleEngine.Core.Services
 {
-    internal class AsyncRuleService<T> where T : class, new()
+    internal sealed class AsyncRuleService<T> where T : class, new()
     {
         private readonly T _model;
         private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
         private readonly ActiveRuleService<T> _activeRuleService;
-        private ConcurrentBag<Task<IRuleResult>> ParallelRuleResults { get; } = new ConcurrentBag<Task<IRuleResult>>();
+        private readonly ICollection<IRuleResult> _asyncRuleResults = new List<IRuleResult>();
+        private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = new ConcurrentBag<Task<IRuleResult>>();
 
         public AsyncRuleService(T model,
             IEnumerable<IGeneralRule<T>> rules,
@@ -23,8 +24,6 @@ namespace DotNetRuleEngine.Core.Services
             _activeRuleService = new ActiveRuleService<T>(rules);
             _ruleEngineConfiguration = ruleEngineTerminated;
         }
-
-        public ICollection<IRuleResult> AsyncRuleResults { get; } =  new List<IRuleResult>();
 
         public async Task InvokeAsyncRules(IEnumerable<IGeneralRule<T>> rules)
         {
@@ -76,7 +75,7 @@ namespace DotNetRuleEngine.Core.Services
                 {
                     await InvokePreactiveRulesAsync(pRule);
 
-                    ParallelRuleResults.Add(Task.Run(async () =>
+                    _parallelRuleResults.Add(Task.Run(async () =>
                     {
                         TraceMessage.Verbose(pRule, TraceMessage.BeforeInvokeAsync);
                         await pRule.BeforeInvokeAsync();
@@ -117,17 +116,17 @@ namespace DotNetRuleEngine.Core.Services
             }
         }
 
-        public async Task<IRuleResult[]> GetAsyncRuleResults()
+        public async Task<IRuleResult[]> GetAsyncRuleResultsAsync()
         {
-            await Task.WhenAll(ParallelRuleResults);
+            await Task.WhenAll(_parallelRuleResults);
 
-            ParallelRuleResults.ToList().ForEach(rule =>
+            _parallelRuleResults.ToList().ForEach(rule =>
             {
                 rule.Result.AssignRuleName(rule.GetType().Name);
                 AddToAsyncRuleResults(rule.Result);
             });
 
-            return AsyncRuleResults.ToArray();
+            return _asyncRuleResults.ToArray();
         }
 
         private async Task InvokeNestedRulesAsync(bool invokeNestedRules, IGeneralRule<T> rule)
@@ -140,7 +139,7 @@ namespace DotNetRuleEngine.Core.Services
 
         private void AddToAsyncRuleResults(IRuleResult ruleResult)
         {
-            if (ruleResult != null) AsyncRuleResults.Add(ruleResult);
+            if (ruleResult != null) _asyncRuleResults.Add(ruleResult);
         }
         
         private static IEnumerable<IRuleAsync<T>> OrderByExecutionOrder(IEnumerable<IGeneralRule<T>> rules)
