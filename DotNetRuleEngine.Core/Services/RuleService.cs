@@ -82,7 +82,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             if (invokeNestedRules && rule.IsNested)
             {
-                Execute(_activeRuleService.FilterActivatingRules(OrderByExecutionOrder(rule.GetRules())));
+                Execute(_activeRuleService.FilterActivatingRules(OrderByExecutionOrder(rule.GetResolvedRules())));
             }
         }
 

@@ -9,7 +9,7 @@ namespace DotNetRuleEngine.Core
 {
     public abstract class Rule<T> : IRule<T> where T : class, new()
     {
-        private IList<IGeneralRule<T>> Rules { get; set; } = new List<IGeneralRule<T>>();
+        private IList<object> Rules { get; set; } = new List<object>();
 
         public T Model { get; set; }
 
@@ -19,30 +19,27 @@ namespace DotNetRuleEngine.Core
 
         public bool IsPreactive { get; set; }
 
-        public Type ObserveRule { get; set; }        
+        public Type ObserveRule { get; set; }
 
         public IDependencyResolver Resolve { get; set; }
 
         public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 
-        public object TryGetValue(string key, int timeoutInMs = RuleDataService.DefaultTimeoutInMs) => RuleDataService.GetInstance().GetValue(key, Configuration);
+        public object TryGetValue(string key, int timeoutInMs = RuleDataService.DefaultTimeoutInMs) =>
+            RuleDataService.GetInstance().GetValue(key, Configuration);
 
-        public void TryAdd(string key, object value) => RuleDataService.GetInstance().AddOrUpdate(key, value, Configuration);
+        public void TryAdd(string key, object value) =>
+            RuleDataService.GetInstance().AddOrUpdate(key, value, Configuration);
 
-        public ICollection<IGeneralRule<T>> GetRules() => Rules;       
+        public IList<object> GetRules() => Rules;
 
-        public void AddRules(params IGeneralRule<T>[] rules) => Rules = rules;             
+        public void AddRules(params object[] rules) => Rules = rules;
 
-        public virtual void Initialize()
-        {
-        }
-        public virtual void BeforeInvoke()
-        {
-        }
+        public virtual void Initialize() { }
 
-        public virtual void AfterInvoke()
-        {
-        }
+        public virtual void BeforeInvoke() { }
+
+        public virtual void AfterInvoke() { }
 
         public abstract IRuleResult Invoke();
     }

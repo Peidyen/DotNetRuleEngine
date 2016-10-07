@@ -42,6 +42,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Exceptions\DependencyResolverNotFoundException.cs" />
+    <Compile Include="Exceptions\TimeoutException.cs" />
     <Compile Include="Exceptions\UnsupportedRuleException.cs" />
     <Compile Include="Services\RuleInitializationService.cs" />
     <Compile Include="Services\ActiveRuleService.cs" />

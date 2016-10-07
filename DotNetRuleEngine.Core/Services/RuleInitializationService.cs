@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DotNetRuleEngine.Core.Exceptions;
 using DotNetRuleEngine.Core.Interface;
 using DotNetRuleEngine.Core.Models;
 
@@ -21,33 +22,57 @@ namespace DotNetRuleEngine.Core.Services
             _dependencyResolver = dependencyResolver;
         }
 
-        public void Initialize(IEnumerable<IGeneralRule<T>> rules, IGeneralRule<T> nestingRule = null)
+        public IList<IRule<T>> Initialize(IList<object> rules)
         {
-            foreach (var rule in rules.OfType<IRule<T>>())
+            Initializer(rules);
+            return rules.OfType<IRule<T>>().ToList();
+        }
+
+        private void Initializer(IList<object> rules, 
+            IGeneralRule<T> nestingRule = null)
+        {
+            for (var i = 0; i < rules.Count; i++)
             {
-                RuleInitializer(rule, nestingRule);
+                var rule = ResolveRule<IRule<T>>(rules[i]);
+
+                rules[i] = rule;
+
+                InitializeRule(rule, nestingRule);
 
                 rule.Initialize();
 
-                if (rule.IsNested) Initialize(rule.GetRules(), rule);
+                if (rule.IsNested) Initializer(rule.GetRules(), rule);
             }
         }
 
-        public Task InitializeAsync(IEnumerable<IGeneralRule<T>> rules, IGeneralRule<T> nestingRule = null)
+        public async Task<IList<IRuleAsync<T>>> InitializeAsync(IList<object> rules)
         {
             var initBag = new ConcurrentBag<Task>();
-            Parallel.ForEach(rules.OfType<IRuleAsync<T>>(), rule =>
+            InitializerAsync(rules, initBag);
+            
+            await Task.WhenAll(initBag);
+
+            return rules.OfType<IRuleAsync<T>>().ToList();
+        }
+
+        private void InitializerAsync(IList<object> rules,
+            ConcurrentBag<Task> initBag, IGeneralRule<T> nestingRule = null)
+        {
+            for (var i = 0; i < rules.Count; i++)
             {
-                RuleInitializer(rule, nestingRule);
+                var rule = ResolveRule<IRuleAsync<T>>(rules[i]);
+
+                rules[i] = rule;
+
+                InitializeRule(rule, nestingRule);
 
                 initBag.Add(rule.InitializeAsync());
 
-                if (rule.IsNested) InitializeAsync(rule.GetRules(), rule);
-            });
-            return Task.WhenAll(initBag);
+                if (rule.IsNested) InitializerAsync(rule.GetRules(), initBag, rule);
+            }
         }
 
-        private void RuleInitializer(IGeneralRule<T> rule, IGeneralRule<T> nestingRule = null)
+        private void InitializeRule(IGeneralRule<T> rule, IGeneralRule<T> nestingRule = null)
         {
             rule.Model = _model;
             rule.Configuration = new RuleEngineConfiguration<T>(rule.Configuration) { RuleEngineId = _ruleEngineId };
@@ -59,6 +84,19 @@ namespace DotNetRuleEngine.Core.Services
             }
 
             rule.Resolve = _dependencyResolver;
+        }
+
+        private TK ResolveRule<TK>(object ruleObject) where TK : class
+        {
+            var resolvedRule = default(TK);
+
+            if (ruleObject is Type)
+            {
+                resolvedRule = _dependencyResolver.GetService((Type)ruleObject) as TK;
+
+                if (resolvedRule == null) throw new UnsupportedRuleException();                
+            }
+            return (TK)(resolvedRule ?? ruleObject);
         }
     }
 }

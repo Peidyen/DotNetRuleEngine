@@ -25,7 +25,7 @@ namespace DotNetRuleEngine.Core.Extensions
             ruleResults.Where(r => string.Equals(r.Name, ruleName, StringComparison.InvariantCultureIgnoreCase));
 
         public static RuleEngine<T> ApplyRules<T>(this RuleEngine<T> ruleEngineExecutor,
-            params IGeneralRule<T>[] rules) where T : class, new()
+            params object[] rules) where T : class, new()
         {
             ruleEngineExecutor.AddRules(rules);
 

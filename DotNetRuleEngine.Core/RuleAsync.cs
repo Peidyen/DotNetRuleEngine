@@ -10,7 +10,7 @@ namespace DotNetRuleEngine.Core
 {
     public abstract class RuleAsync<T> : IRuleAsync<T> where T : class, new()
     {
-        private IList<IGeneralRule<T>> Rules { get; set; } = new List<IGeneralRule<T>>();
+        private IList<object> Rules { get; set; } = new List<object>();
 
         public T Model { get; set; }
 
@@ -34,9 +34,9 @@ namespace DotNetRuleEngine.Core
         public async Task TryAddAsync(string key, Task<object> value) => 
             await RuleDataService.GetInstance().AddOrUpdateAsync(key, value, Configuration);
 
-        public ICollection<IGeneralRule<T>> GetRules() => Rules;
+        public IList<object> GetRules() => Rules;
         
-        public void AddRules(params IGeneralRule<T>[] rules) => Rules = rules;
+        public void AddRules(params object[] rules) => Rules = rules;
 
         public virtual async Task InitializeAsync() => await Task.FromResult<object>(null);
 

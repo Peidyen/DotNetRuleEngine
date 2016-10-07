@@ -58,5 +58,11 @@ namespace DotNetRuleEngine.Core.Extensions
                 .Where(condition)
                 .ToList();
         }
+
+        public static IEnumerable<IGeneralRule<T>> GetResolvedRules<T>(this IGeneralRule<T> rule) where T : class, new()
+        {
+            return rule.GetRules().OfType<IGeneralRule<T>>();
+        }
+
     }
 }

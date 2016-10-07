@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Interface;
 using DotNetRuleEngine.Core.Models;
+using DotNetRuleEngineTimeOutException = DotNetRuleEngine.Core.Exceptions.TimeoutException;
 
 namespace DotNetRuleEngine.Core.Services
 {
@@ -43,7 +44,7 @@ namespace DotNetRuleEngine.Core.Services
                 if (value != null) return await value;
             }
 
-            throw new TimeoutException($"Unable to get {key}");
+            throw new DotNetRuleEngineTimeOutException($"Unable to get {key}");
         }
 
         public void AddOrUpdate<T>(string key, object value, IConfiguration<T> configuration)
@@ -68,7 +69,7 @@ namespace DotNetRuleEngine.Core.Services
                 if (value != null) return value;
             }
 
-            throw new TimeoutException($"Unable to get {key}");
+            throw new DotNetRuleEngineTimeOutException($"Unable to get {key}");
         }
 
         public static RuleDataService GetInstance() => DataManager.Value;

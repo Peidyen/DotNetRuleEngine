@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using DotNetRuleEngine.Core.Extensions;
 using DotNetRuleEngine.Core.Interface;
 
 namespace DotNetRuleEngine.Core.Services
@@ -50,13 +51,13 @@ namespace DotNetRuleEngine.Core.Services
             {
                 if (predicate(r))
                 {
-                    activatingRules.AddOrUpdate(r.ObserveRule, new[] { r }, (type, list) =>
-                    {
-                        list.Add(r);
-                        return list;
-                    });
+                    activatingRules.AddOrUpdate(r.ObserveRule, new List<IGeneralRule<T>> { r }, (type, list) =>
+                   {
+                       list.Add(r);
+                       return list;
+                   });
                 }
-                if (r.IsNested) GetActivatingRules(r.GetRules(), activatingRules, predicate);
+                if (r.IsNested) GetActivatingRules(r.GetResolvedRules(), activatingRules, predicate);
             });
         }
     }

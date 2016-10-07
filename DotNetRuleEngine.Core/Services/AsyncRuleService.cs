@@ -133,7 +133,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             if (invokeNestedRules && rule.IsNested)
             {
-                await ExecuteAsyncRules(_activeRuleService.FilterActivatingRules(rule.GetRules()));
+                await ExecuteAsyncRules(_activeRuleService.FilterActivatingRules(rule.GetResolvedRules()));
             }
         }
 
@@ -153,8 +153,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             return rules.OfType<IRuleAsync<T>>()
                 .Where(r => r.IsParallel && !r.Configuration.ExecutionOrder.HasValue)
-                .OrderBy(r => r.GetType().Name)
-                .ToList();
+                .OrderBy(r => r.GetType().Name);
         }
     }
 }

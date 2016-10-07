@@ -19,8 +19,8 @@ namespace DotNetRuleEngine.Core.Interface
 
         IConfiguration<T> Configuration { get; set;  }
 
-        ICollection<IGeneralRule<T>> GetRules();
+        IList<object> GetRules();
 
-        void AddRules(params IGeneralRule<T>[] rules);
+        void AddRules(params object[] rules);
     }
 }
