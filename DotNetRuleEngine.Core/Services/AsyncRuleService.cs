@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -44,21 +45,37 @@ namespace DotNetRuleEngine.Core.Services
                 {
                     await InvokePreactiveRulesAsync(asyncRule);
 
-                    TraceMessage.Verbose(asyncRule, TraceMessage.BeforeInvokeAsync);
-                    await asyncRule.BeforeInvokeAsync();
+                    try
+                    {
+                        TraceMessage.Verbose(asyncRule, TraceMessage.BeforeInvokeAsync);
+                        await asyncRule.BeforeInvokeAsync();
 
-                    TraceMessage.Verbose(asyncRule, TraceMessage.InvokeAsync);
-                    var ruleResult = await asyncRule.InvokeAsync();
+                        TraceMessage.Verbose(asyncRule, TraceMessage.InvokeAsync);
+                        var ruleResult = await asyncRule.InvokeAsync();
 
-                    TraceMessage.Verbose(asyncRule, TraceMessage.AfterInvokeAsync);
-                    await asyncRule.AfterInvokeAsync();
+                        TraceMessage.Verbose(asyncRule, TraceMessage.AfterInvokeAsync);
+                        await asyncRule.AfterInvokeAsync();
 
-                    asyncRule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
+                        asyncRule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
 
-                    await InvokeReactiveRulesAsync(asyncRule);
+                        await InvokeReactiveRulesAsync(asyncRule);
 
-                    ruleResult.AssignRuleName(asyncRule.GetType().Name);
-                    AddToAsyncRuleResults(ruleResult);
+                        ruleResult.AssignRuleName(asyncRule.GetType().Name);
+                        AddToAsyncRuleResults(ruleResult);
+                    }
+                    catch (Exception exception)
+                    {
+                        asyncRule.UnhandledException = exception;
+
+                        if (_activeRuleService.GetExceptionRules().ContainsKey(asyncRule.GetType()))
+                        {
+                            await InvokeExceptionRulesAsync(asyncRule);
+                        }
+                        else
+                        {
+                            throw;
+                        }                        
+                    }
                 }
 
                 await InvokeNestedRulesAsync(!asyncRule.Configuration.InvokeNestedRulesFirst, asyncRule);
@@ -77,18 +94,36 @@ namespace DotNetRuleEngine.Core.Services
 
                     _parallelRuleResults.Add(Task.Run(async () =>
                     {
-                        TraceMessage.Verbose(pRule, TraceMessage.BeforeInvokeAsync);
-                        await pRule.BeforeInvokeAsync();
+                        IRuleResult ruleResult = null;
 
-                        TraceMessage.Verbose(pRule, TraceMessage.InvokeAsync);
-                        var ruleResult = await pRule.InvokeAsync();
+                        try
+                        {
+                            TraceMessage.Verbose(pRule, TraceMessage.BeforeInvokeAsync);
+                            await pRule.BeforeInvokeAsync();
 
-                        TraceMessage.Verbose(pRule, TraceMessage.AfterInvokeAsync);
-                        await pRule.AfterInvokeAsync();
+                            TraceMessage.Verbose(pRule, TraceMessage.InvokeAsync);
+                            ruleResult = await pRule.InvokeAsync();
 
-                        pRule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
+                            TraceMessage.Verbose(pRule, TraceMessage.AfterInvokeAsync);
+                            await pRule.AfterInvokeAsync();
 
-                        ruleResult.AssignRuleName(pRule.GetType().Name);
+                            ruleResult.AssignRuleName(pRule.GetType().Name);
+
+                            pRule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
+                        }
+                        catch (Exception exception)
+                        {
+                            pRule.UnhandledException = exception;
+
+                            if (_activeRuleService.GetExceptionRules().ContainsKey(pRule.GetType()))
+                            {
+                                await InvokeExceptionRulesAsync(pRule);
+                            }
+                            else
+                            {
+                                throw;
+                            }                            
+                        }
 
                         return ruleResult;
                     }));
@@ -114,6 +149,15 @@ namespace DotNetRuleEngine.Core.Services
             {
                 await ExecuteAsyncRules(_activeRuleService.GetPreactiveRules()[asyncRule.GetType()].OfType<IRuleAsync<T>>());
             }
+        }
+
+        private async Task InvokeExceptionRulesAsync(IRuleAsync<T> asyncRule)
+        {
+            var exceptionRules = _activeRuleService.GetExceptionRules()[asyncRule.GetType()].OfType<IRuleAsync<T>>().ToList();
+
+            exceptionRules.ForEach(exceptionRule => exceptionRule.UnhandledException = asyncRule.UnhandledException);
+
+            await ExecuteAsyncRules(exceptionRules);
         }
 
         public async Task<IRuleResult[]> GetAsyncRuleResultsAsync()

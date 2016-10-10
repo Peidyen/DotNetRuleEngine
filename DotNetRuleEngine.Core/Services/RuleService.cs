@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DotNetRuleEngine.Core.Extensions;
 using DotNetRuleEngine.Core.Interface;
@@ -21,7 +22,8 @@ namespace DotNetRuleEngine.Core.Services
             _ruleEngineConfiguration = ruleEngineConfiguration;
         }
 
-        public void Invoke(IEnumerable<IGeneralRule<T>> rules) => Execute(_activeRuleService.FilterActivatingRules(rules));
+        public void Invoke(IEnumerable<IGeneralRule<T>> rules)
+            => Execute(_activeRuleService.FilterActivatingRules(rules));
 
         private void Execute(IEnumerable<IGeneralRule<T>> rules)
         {
@@ -33,16 +35,32 @@ namespace DotNetRuleEngine.Core.Services
                 {
                     InvokePreactiveRules(rule);
 
-                    TraceMessage.Verbose(rule, TraceMessage.BeforeInvoke);
-                    rule.BeforeInvoke();
+                    try
+                    {
+                        TraceMessage.Verbose(rule, TraceMessage.BeforeInvoke);
+                        rule.BeforeInvoke();
 
-                    TraceMessage.Verbose(rule, TraceMessage.Invoke);
-                    var ruleResult = rule.Invoke();
+                        TraceMessage.Verbose(rule, TraceMessage.Invoke);
+                        var ruleResult = rule.Invoke();
 
-                    TraceMessage.Verbose(rule, TraceMessage.AfterInvoke);
-                    rule.AfterInvoke();
+                        TraceMessage.Verbose(rule, TraceMessage.AfterInvoke);
+                        rule.AfterInvoke();
 
-                    AddToRuleResults(ruleResult, rule.GetType().Name);
+                        AddToRuleResults(ruleResult, rule.GetType().Name);
+                    }
+
+                    catch (Exception exception)
+                    {
+                        rule.UnhandledException = exception;
+                        if (_activeRuleService.GetExceptionRules().ContainsKey(rule.GetType()))
+                        {
+                            InvokeExceptionRules(rule);
+                        }
+                        else
+                        {
+                            throw;
+                        }                        
+                    }                   
 
                     rule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
 
@@ -69,6 +87,15 @@ namespace DotNetRuleEngine.Core.Services
             {
                 Execute(_activeRuleService.GetPreactiveRules()[rule.GetType()].OfType<IRule<T>>());
             }
+        }
+
+        private void InvokeExceptionRules(IRule<T> rule)
+        {
+            var exceptionRules = _activeRuleService.GetExceptionRules()[rule.GetType()].OfType<IRule<T>>().ToList();
+
+            exceptionRules.ForEach(exceptionRule => exceptionRule.UnhandledException = rule.UnhandledException);
+
+            Execute(exceptionRules);
         }
 
         private void AddToRuleResults(IRuleResult ruleResult, string ruleName)

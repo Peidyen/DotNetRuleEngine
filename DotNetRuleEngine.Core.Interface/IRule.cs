@@ -1,4 +1,6 @@
-﻿namespace DotNetRuleEngine.Core.Interface
+﻿using System;
+
+namespace DotNetRuleEngine.Core.Interface
 {
     public interface IRule<T> : IGeneralRule<T> where T : class, new()
     {        
@@ -12,6 +14,6 @@
 
         object TryGetValue(string key, int timeoutInMs);
 
-        void TryAdd(string key, object value);
+        void TryAdd(string key, object value);        
     }
 }
