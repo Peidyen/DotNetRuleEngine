@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Extensions;
 using DotNetRuleEngine.Core.Interface;
@@ -14,7 +15,7 @@ namespace DotNetRuleEngine.Core.Services
         private readonly T _model;
         private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
         private readonly ActiveRuleService<T> _activeRuleService;
-        private readonly ICollection<IRuleResult> _asyncRuleResults = new List<IRuleResult>();
+        private readonly ConcurrentBag<IRuleResult> _asyncRuleResults = new ConcurrentBag<IRuleResult>();
         private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = new ConcurrentBag<Task<IRuleResult>>();
 
         public AsyncRuleService(T model,
@@ -92,7 +93,7 @@ namespace DotNetRuleEngine.Core.Services
                 {
                     await InvokePreactiveRulesAsync(pRule);
 
-                    _parallelRuleResults.Add(Task.Run(async () =>
+                    _parallelRuleResults.Add(await Task.Factory.StartNew(async () =>
                     {
                         IRuleResult ruleResult = null;
 
@@ -126,7 +127,8 @@ namespace DotNetRuleEngine.Core.Services
                         }
 
                         return ruleResult;
-                    }));
+                        //}, CancellationToken.None));
+                    }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default));
 
                     await InvokeReactiveRulesAsync(pRule);
                 }
@@ -164,7 +166,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             await Task.WhenAll(_parallelRuleResults);
 
-            _parallelRuleResults.ToList().ForEach(rule =>
+            Parallel.ForEach(_parallelRuleResults, rule =>
             {
                 rule.Result.AssignRuleName(rule.GetType().Name);
                 AddToAsyncRuleResults(rule.Result);

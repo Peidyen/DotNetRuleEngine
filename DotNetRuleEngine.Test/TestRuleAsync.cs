@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using DotNetRuleEngine.Core;
 using DotNetRuleEngine.Core.Extensions;
@@ -88,8 +89,10 @@ namespace DotNetRuleEngine.Test
                 .ApplyRules(new ProductAExecutionOrderRuleAsync(), new ProductBExecutionOrderRuleAsync())
                 .ExecuteAsync().Result;
 
-            Assert.AreEqual("ProductBExecutionOrderRuleAsync", ruleResults.First().Name);
-            Assert.AreEqual("ProductAExecutionOrderRuleAsync", ruleResults.Skip(1).First().Name);
+            var productBExecutionOrderRuleAsync = ruleResults.FindRuleResult<ProductBExecutionOrderRuleAsync>();
+            var productAExecutionOrderRuleAsync = ruleResults.FindRuleResult<ProductAExecutionOrderRuleAsync>();
+
+            Assert.IsTrue(productBExecutionOrderRuleAsync.Result.To<long>() < productAExecutionOrderRuleAsync.Result.To<long>());
         }
     }
 }

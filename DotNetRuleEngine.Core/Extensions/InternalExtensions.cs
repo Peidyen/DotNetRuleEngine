@@ -10,10 +10,10 @@ namespace DotNetRuleEngine.Core.Extensions
     internal static class InternalExtensions
     {
         public static bool CanInvoke<T>(this IGeneralRule<T> rule, T model, bool terminated) where T : class, new() => 
-            !rule.Configuration.Skip && rule.Configuration.Constraint.Invoke(model) && !terminated;
+            !rule.Configuration.Skip && rule.Configuration.Constraint.Invoke2(model) && !terminated;
 
-        public static bool Invoke<T>(this Expression<Predicate<T>> predicate, T model) =>
-            predicate == null || predicate.Compile().Invoke(model);
+        public static bool Invoke2<T>(this Predicate<T> predicate, T model) =>
+            predicate == null || predicate(model);
 
 
         public static void AssignRuleName(this IRuleResult ruleResult, string ruleName)
