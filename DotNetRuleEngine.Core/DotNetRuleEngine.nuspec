@@ -24,7 +24,7 @@ See doc. at https://github.com/ayayalar/DotNetRuleEngine/wiki</releaseNotes>
         <tags>Rules Engine</tags>
     </metadata>
     <files>
-        <file src=".\bin\Release\DotNetRuleEngine.Core.Interface.dll" target="lib\net45\DotNetRuleEngine.Core.Interface.dll" />
-        <file src=".\bin\Release\DotNetRuleEngine.dll" target="lib\net45\DotNetRuleEngine.dll" />
+        <file src="DotNetRuleEngine.Core\bin\Release\DotNetRuleEngine.Core.Interface.dll" target="lib\net45\DotNetRuleEngine.Core.Interface.dll" />
+        <file src="DotNetRuleEngine.Core\bin\Release\DotNetRuleEngine.dll" target="lib\net45\DotNetRuleEngine.dll" />
     </files>
 </package>
