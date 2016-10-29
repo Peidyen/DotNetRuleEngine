@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using DotNetRuleEngine.Core.Exceptions;
 using DotNetRuleEngine.Core.Interface;
 
@@ -56,6 +55,7 @@ namespace DotNetRuleEngine.Core.Extensions
 
             return rules.Where(r => !r.Configuration.ExecutionOrder.HasValue)
                 .Where(condition)
+                .AsParallel()
                 .ToList();
         }
 

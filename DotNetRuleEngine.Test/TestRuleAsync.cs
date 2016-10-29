@@ -92,7 +92,7 @@ namespace DotNetRuleEngine.Test
             var productBExecutionOrderRuleAsync = ruleResults.FindRuleResult<ProductBExecutionOrderRuleAsync>();
             var productAExecutionOrderRuleAsync = ruleResults.FindRuleResult<ProductAExecutionOrderRuleAsync>();
 
-            Assert.IsTrue(productBExecutionOrderRuleAsync.Result.To<long>() < productAExecutionOrderRuleAsync.Result.To<long>());
+            Assert.IsTrue(productBExecutionOrderRuleAsync.Result.To<long>() <= productAExecutionOrderRuleAsync.Result.To<long>());
         }
     }
 }

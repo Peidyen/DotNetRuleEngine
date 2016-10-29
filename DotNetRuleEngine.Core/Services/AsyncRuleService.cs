@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Extensions;
 using DotNetRuleEngine.Core.Interface;
@@ -75,7 +74,7 @@ namespace DotNetRuleEngine.Core.Services
                         else
                         {
                             throw;
-                        }                        
+                        }
                     }
                 }
 
@@ -123,12 +122,11 @@ namespace DotNetRuleEngine.Core.Services
                             else
                             {
                                 throw;
-                            }                            
+                            }
                         }
 
                         return ruleResult;
-                        //}, CancellationToken.None));
-                    }, CancellationToken.None, TaskCreationOptions.None, TaskScheduler.Default));
+                    }, TaskCreationOptions.PreferFairness));
 
                     await InvokeReactiveRulesAsync(pRule);
                 }
@@ -187,7 +185,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             if (ruleResult != null) _asyncRuleResults.Add(ruleResult);
         }
-        
+
         private static IEnumerable<IRuleAsync<T>> OrderByExecutionOrder(IEnumerable<IGeneralRule<T>> rules)
         {
             rules = rules.ToList();
@@ -199,7 +197,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             return rules.OfType<IRuleAsync<T>>()
                 .Where(r => r.IsParallel && !r.Configuration.ExecutionOrder.HasValue)
-                .OrderBy(r => r.GetType().Name);
+                .AsParallel();
         }
     }
 }
