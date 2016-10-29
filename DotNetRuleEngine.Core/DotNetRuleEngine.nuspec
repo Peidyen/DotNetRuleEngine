@@ -1,0 +1,30 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+    <metadata>
+        <id>DotNetRuleEngine</id>
+        <version>3.0.3</version>
+        <title>DotNetRuleEngine</title>
+        <authors>Arif Yayalar</authors>
+        <owners>Arif Yayalar</owners>
+        <projectUrl>https://github.com/ayayalar/DotNetRuleEngine</projectUrl>
+        <iconUrl>https://raw.githubusercontent.com/ayayalar/DotNetRuleEngine/master/DotNetRuleEngine.Core/Icon/icon_128.ico</iconUrl>
+        <requireLicenseAcceptance>false</requireLicenseAcceptance>
+        <description>DotNetRuleEngine allows you to write your business logic as series of rules to keep your code clean and structured.
+
+See doc. at https://github.com/ayayalar/DotNetRuleEngine/wiki</description>
+        <summary>Rule Based Software Development
+S.O.L.I.D compliant.
+Rules Engine</summary>
+        <releaseNotes>- Nested rules can now take advantage of dependency injection
+- Other minor enhancements
+
+See doc. at https://github.com/ayayalar/DotNetRuleEngine/wiki</releaseNotes>
+        <copyright>MIT</copyright>
+        <language>en-US</language>
+        <tags>Rules Engine</tags>
+    </metadata>
+    <files>
+        <file src=".\bin\Release\DotNetRuleEngine.Core.Interface.dll" target="lib\net45\DotNetRuleEngine.Core.Interface.dll" />
+        <file src=".\bin\Release\DotNetRuleEngine.dll" target="lib\net45\DotNetRuleEngine.dll" />
+    </files>
+</package>
