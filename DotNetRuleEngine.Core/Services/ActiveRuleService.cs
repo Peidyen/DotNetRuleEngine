@@ -13,20 +13,24 @@ namespace DotNetRuleEngine.Core.Services
         private readonly IEnumerable<IGeneralRule<T>> _rules;
         private readonly Lazy<ConcurrentDictionary<Type, IList<IGeneralRule<T>>>> _preactiveRules;
         private readonly Lazy<ConcurrentDictionary<Type, IList<IGeneralRule<T>>>> _reactiveRules;
+        private readonly Lazy<ConcurrentDictionary<Type, IList<IGeneralRule<T>>>> _exceptionRules;
 
         public ActiveRuleService(IEnumerable<IGeneralRule<T>> rules)
         {
             _rules = rules;
             _preactiveRules = new Lazy<ConcurrentDictionary<Type, IList<IGeneralRule<T>>>>(CreatePreactiveRules, true);
             _reactiveRules = new Lazy<ConcurrentDictionary<Type, IList<IGeneralRule<T>>>>(CreateReactiveRules, true);
+            _exceptionRules = new Lazy<ConcurrentDictionary<Type, IList<IGeneralRule<T>>>>(CreateExceptionRules, true);
         }
 
         public ConcurrentDictionary<Type, IList<IGeneralRule<T>>> GetReactiveRules() => _reactiveRules.Value;
 
         public ConcurrentDictionary<Type, IList<IGeneralRule<T>>> GetPreactiveRules() => _preactiveRules.Value;
 
+        public ConcurrentDictionary<Type, IList<IGeneralRule<T>>> GetExceptionRules() => _exceptionRules.Value;
+
         public IEnumerable<IGeneralRule<T>> FilterActivatingRules(IEnumerable<IGeneralRule<T>> rules) =>
-            rules.Where(r => !r.IsReactive && !r.IsPreactive).ToList();
+            rules.Where(r => !r.IsReactive && !r.IsPreactive && !r.IsExceptionHandler).ToList();
 
         private ConcurrentDictionary<Type, IList<IGeneralRule<T>>> CreatePreactiveRules()
         {
@@ -40,6 +44,14 @@ namespace DotNetRuleEngine.Core.Services
         {
             var reactiveRules = new ConcurrentDictionary<Type, IList<IGeneralRule<T>>>();
             GetActivatingRules(_rules, reactiveRules, rule => rule.IsReactive);
+
+            return reactiveRules;
+        }
+
+        private ConcurrentDictionary<Type, IList<IGeneralRule<T>>> CreateExceptionRules()
+        {
+            var reactiveRules = new ConcurrentDictionary<Type, IList<IGeneralRule<T>>>();
+            GetActivatingRules(_rules, reactiveRules, rule => rule.IsExceptionHandler);
 
             return reactiveRules;
         }

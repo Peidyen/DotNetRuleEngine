@@ -18,7 +18,7 @@ namespace DotNetRuleEngine.Core.Models
 
         public Guid RuleEngineId { get; set; }
 
-        public Expression<Predicate<T>> Constraint { get; set; }
+        public Predicate<T> Constraint { get; set; }
 
         public int? ExecutionOrder { get; set; }
 

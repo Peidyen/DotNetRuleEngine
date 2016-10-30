@@ -24,6 +24,10 @@ namespace DotNetRuleEngine.Core
 
         public Type ObserveRule { get; set; }
 
+        public bool IsExceptionHandler { get; set; }
+
+        public Exception UnhandledException { get; set; }
+
         public IDependencyResolver Resolve { get; set; }
 
         public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();

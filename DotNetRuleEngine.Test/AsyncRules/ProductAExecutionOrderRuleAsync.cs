@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core;
 using DotNetRuleEngine.Core.Interface;
@@ -17,7 +18,7 @@ namespace DotNetRuleEngine.Test.AsyncRules
 
         public override async Task<IRuleResult> InvokeAsync()
         {
-            return await RuleResult.CreateAsync(new RuleResult());
+            return await RuleResult.CreateAsync(new RuleResult { Result = DateTime.Now.Ticks });
         }
     }
 }

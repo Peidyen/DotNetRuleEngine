@@ -13,7 +13,11 @@ namespace DotNetRuleEngine.Core.Interface
 
         bool IsPreactive { get; set; }
 
+        bool IsExceptionHandler { get; set; }
+
         Type ObserveRule { get; }
+
+        Exception UnhandledException { get; set; }
 
         IDependencyResolver Resolve { get; set; }
 

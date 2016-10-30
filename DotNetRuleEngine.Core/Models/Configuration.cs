@@ -6,7 +6,7 @@ namespace DotNetRuleEngine.Core.Models
 {
     public class Configuration<T> : IConfiguration<T>
     {
-        public Expression<Predicate<T>> Constraint { get; set; }
+        public Predicate<T> Constraint { get; set; }
 
         public bool Skip { get; set; }
 

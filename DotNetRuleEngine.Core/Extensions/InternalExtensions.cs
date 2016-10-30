@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using DotNetRuleEngine.Core.Exceptions;
 using DotNetRuleEngine.Core.Interface;
 
@@ -10,10 +9,10 @@ namespace DotNetRuleEngine.Core.Extensions
     internal static class InternalExtensions
     {
         public static bool CanInvoke<T>(this IGeneralRule<T> rule, T model, bool terminated) where T : class, new() => 
-            !rule.Configuration.Skip && rule.Configuration.Constraint.Invoke(model) && !terminated;
+            !rule.Configuration.Skip && rule.Configuration.Constraint.Invoke2(model) && !terminated;
 
-        public static bool Invoke<T>(this Expression<Predicate<T>> predicate, T model) =>
-            predicate == null || predicate.Compile().Invoke(model);
+        public static bool Invoke2<T>(this Predicate<T> predicate, T model) =>
+            predicate == null || predicate(model);
 
 
         public static void AssignRuleName(this IRuleResult ruleResult, string ruleName)
@@ -56,6 +55,7 @@ namespace DotNetRuleEngine.Core.Extensions
 
             return rules.Where(r => !r.Configuration.ExecutionOrder.HasValue)
                 .Where(condition)
+                .AsParallel()
                 .ToList();
         }
 
