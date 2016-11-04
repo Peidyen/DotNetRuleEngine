@@ -31,11 +31,11 @@ namespace DotNetRuleEngine.Core.Services
             await ExecuteAsyncRules(_activeRuleService.FilterActivatingRules(rules));
         }
 
-        private async Task ExecuteAsyncRules(IEnumerable<IGeneralRule<T>> rules, IGeneralRule<T> parentRule = null)
+        private async Task ExecuteAsyncRules(IEnumerable<IGeneralRule<T>> rules)
         {
             rules = rules.ToList();
 
-            await ExecuteParallelRules(rules, parentRule);
+            await ExecuteParallelRules(rules);
 
             foreach (var rule in OrderByExecutionOrder(rules))
             {
@@ -43,12 +43,14 @@ namespace DotNetRuleEngine.Core.Services
 
                 if (rule.CanInvoke(_model, _ruleEngineConfiguration.IsRuleEngineTerminated()))
                 {
-                    await InvokePreactiveRulesAsync(rule);
-
                     try
                     {
+                        await InvokePreactiveRulesAsync(rule);
+
                         AddToAsyncRuleResults(await ExecuteRule(rule));
                         rule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
+
+                        await InvokeReactiveRulesAsync(rule);
                     }
                     catch (Exception exception)
                     {
@@ -69,11 +71,9 @@ namespace DotNetRuleEngine.Core.Services
             }
         }
 
-        private async Task ExecuteParallelRules(IEnumerable<IGeneralRule<T>> rules, IGeneralRule<T> parentRule = null)
+        private async Task ExecuteParallelRules(IEnumerable<IGeneralRule<T>> rules)
         {
-            var unhandledException = IsUnhandledException(parentRule);
-
-            foreach (var rule in GetParallelRules(rules, unhandledException))
+            foreach (var rule in GetParallelRules(rules))
             {
                 await InvokeNestedRulesAsync(rule.Configuration.InvokeNestedRulesFirst, rule);
 
@@ -88,7 +88,6 @@ namespace DotNetRuleEngine.Core.Services
                         try
                         {
                             ruleResult = await ExecuteRule(rule);
-                            
                         }
                         catch (Exception exception)
                         {
@@ -130,21 +129,11 @@ namespace DotNetRuleEngine.Core.Services
             return ruleResult;
         }
 
-        private static Func<IRuleAsync<T>, bool> IsUnhandledException(IGeneralRule<T> parentRule)
-        {
-            if (parentRule?.UnhandledException != null)
-            {
-                return rule => rule.IsExceptionHandler;
-            }
-
-            return null;
-        }
-
         private async Task InvokeReactiveRulesAsync(IRuleAsync<T> asyncRule)
         {
             if (_activeRuleService.GetReactiveRules().ContainsKey(asyncRule.GetType()))
             {
-                await ExecuteAsyncRules(_activeRuleService.GetReactiveRules()[asyncRule.GetType()].OfType<IRuleAsync<T>>(), asyncRule);
+                await ExecuteAsyncRules(_activeRuleService.GetReactiveRules()[asyncRule.GetType()].OfType<IRuleAsync<T>>());
             }
         }
 
@@ -152,7 +141,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             if (_activeRuleService.GetPreactiveRules().ContainsKey(asyncRule.GetType()))
             {
-                await ExecuteAsyncRules(_activeRuleService.GetPreactiveRules()[asyncRule.GetType()].OfType<IRuleAsync<T>>(), asyncRule);
+                await ExecuteAsyncRules(_activeRuleService.GetPreactiveRules()[asyncRule.GetType()].OfType<IRuleAsync<T>>());
             }
         }
 
@@ -162,7 +151,7 @@ namespace DotNetRuleEngine.Core.Services
 
             exceptionRules.ForEach(exceptionRule => exceptionRule.UnhandledException = asyncRule.UnhandledException);
 
-            await ExecuteAsyncRules(exceptionRules, asyncRule);
+            await ExecuteAsyncRules(exceptionRules);
         }
 
         public async Task<IRuleResult[]> GetAsyncRuleResultsAsync()
@@ -198,14 +187,10 @@ namespace DotNetRuleEngine.Core.Services
                     .Concat(rules.GetRulesWithoutExecutionOrder(rule => !((IRuleAsync<T>)rule).IsParallel).OfType<IRuleAsync<T>>());
         }
 
-        private static IEnumerable<IRuleAsync<T>> GetParallelRules(IEnumerable<IGeneralRule<T>> rules,
-            Func<IRuleAsync<T>, bool> condition = null)
+        private static IEnumerable<IRuleAsync<T>> GetParallelRules(IEnumerable<IGeneralRule<T>> rules)
         {
-            condition = condition ?? (rule => !rule.IsExceptionHandler);
-
             return rules.OfType<IRuleAsync<T>>()
                 .Where(r => r.IsParallel && !r.Configuration.ExecutionOrder.HasValue)
-                .Where(r => condition.Invoke(r))
                 .AsParallel();
         }
     }
