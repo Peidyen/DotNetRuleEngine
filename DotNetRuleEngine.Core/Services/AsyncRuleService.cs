@@ -15,6 +15,7 @@ namespace DotNetRuleEngine.Core.Services
         private readonly T _model;
         private readonly IList<IRuleAsync<T>> _rules;
         private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
+        private readonly IRuleLogger _ruleLogger;
         private readonly RxRuleService<IRuleAsync<T>, T> _rxRuleService;
         private readonly ConcurrentBag<IRuleResult> _asyncRuleResults = new ConcurrentBag<IRuleResult>();
         private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = new ConcurrentBag<Task<IRuleResult>>();
@@ -134,13 +135,23 @@ namespace DotNetRuleEngine.Core.Services
             TraceMessage.Verbose(rule, TraceMessage.BeforeInvokeAsync);
             await rule.BeforeInvokeAsync();
 
-            TraceMessage.Verbose(rule, TraceMessage.InvokeAsync);
-            var ruleResult = await rule.InvokeAsync();
+            if (rule.IsParallel && rule.ParellelConfiguration.CancellationTokenSource == null ||
+                 !rule.ParellelConfiguration.CancellationTokenSource.Token.IsCancellationRequested)
+            {                
+                TraceMessage.Verbose(rule, TraceMessage.InvokeAsync);
+                ruleResult = await rule.InvokeAsync();
 
-            TraceMessage.Verbose(rule, TraceMessage.AfterInvokeAsync);
-            await rule.AfterInvokeAsync();
+                TraceMessage.Verbose(rule, TraceMessage.AfterInvokeAsync);
+                await rule.AfterInvokeAsync();
 
-            ruleResult.AssignRuleName(rule.GetType().Name);
+                _ruleLogger?.Write(rule.GetRuleEngineId(), new RuleModel<T>(rule.Model)
+                {
+                    RuleType = rule.GetRuleType(),
+                    ObservingRule = rule.ObserveRule.Name
+                });
+
+                ruleResult.AssignRuleName(rule.GetType().Name);
+            }           
 
             return ruleResult;
         }
