@@ -32,8 +32,6 @@ namespace DotNetRuleEngine.Core
 
         public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 
-        public IParellelConfiguration<T> ParellelConfiguration { get; set; } = new ParallelConfiguration<T>();
-
         public async Task<object> TryGetValueAsync(string key, int timeoutInMs = DataSharingService.DefaultTimeoutInMs) => 
             await DataSharingService.GetInstance().GetValueAsync(key, Configuration, timeoutInMs);
 

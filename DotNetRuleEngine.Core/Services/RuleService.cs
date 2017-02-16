@@ -12,18 +12,16 @@ namespace DotNetRuleEngine.Core.Services
         private readonly T _model;
         private readonly IList<IRule<T>> _rules;
         private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
-        private readonly IRuleLogger _ruleLogger;
         private readonly RxRuleService<IRule<T>, T> _rxRuleService;
         private readonly ICollection<IRuleResult> _ruleResults = new List<IRuleResult>();
 
         public RuleService(T model, IList<IRule<T>> rules,
-            IRuleEngineConfiguration<T> ruleEngineConfiguration, IRuleLogger ruleLogger = null)
+            IRuleEngineConfiguration<T> ruleEngineConfiguration)
         {
             _model = model;
             _rules = rules;
             _rxRuleService = new RxRuleService<IRule<T>, T>(_rules);
             _ruleEngineConfiguration = ruleEngineConfiguration;
-            _ruleLogger = ruleLogger;
         }
 
         public void Invoke() => Execute(_rxRuleService.FilterRxRules(_rules));
@@ -50,13 +48,6 @@ namespace DotNetRuleEngine.Core.Services
 
                         TraceMessage.Verbose(rule, TraceMessage.AfterInvoke);
                         rule.AfterInvoke();
-
-                        _ruleLogger?.Write(rule.GetRuleEngineId(), new RuleModel<T>(rule.Model)
-                        {
-                            RuleType = rule.GetRuleType(),
-                            Rule = rule.GetRuleName(),
-                            ObservingRule = rule.ObserveRule?.Name
-                        });
 
                         AddToRuleResults(ruleResult, rule.GetType().Name);
                     }

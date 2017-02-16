@@ -23,8 +23,6 @@ namespace DotNetRuleEngine.Core
         private readonly RuleEngineConfiguration<T> _ruleEngineConfiguration =
             new RuleEngineConfiguration<T>(new Configuration<T>());
 
-        private IRuleLogger _ruleLogger;
-
         /// <summary>
         /// Rule engine ctor.
         /// </summary>
@@ -43,12 +41,11 @@ namespace DotNetRuleEngine.Core
         /// <param name="dependencyResolver"></param>
         /// <param name="ruleLogger"></param>
         /// <returns></returns>
-        public static RuleEngine<T> GetInstance(T instance = null, IDependencyResolver dependencyResolver = null, IRuleLogger ruleLogger = null) =>
+        public static RuleEngine<T> GetInstance(T instance = null, IDependencyResolver dependencyResolver = null) =>
             new RuleEngine<T>
             {
                 _model = instance,
                 _dependencyResolver = dependencyResolver,
-                _ruleLogger = ruleLogger
             };
 
         /// <summary>
@@ -74,7 +71,7 @@ namespace DotNetRuleEngine.Core
             var rules = await new BootstrapService<T>(_model, _ruleEngineId, _dependencyResolver)
                 .BootstrapAsync(_rules);
 
-            _asyncRuleService = new AsyncRuleService<T>(_model, rules, _ruleEngineConfiguration, _ruleLogger);
+            _asyncRuleService = new AsyncRuleService<T>(_model, rules, _ruleEngineConfiguration);
 
             await _asyncRuleService.InvokeAsyncRules();
 
@@ -92,7 +89,7 @@ namespace DotNetRuleEngine.Core
             var rules = new BootstrapService<T>(_model, _ruleEngineId, _dependencyResolver)
                 .Bootstrap(_rules);
 
-            _ruleService = new RuleService<T>(_model, rules, _ruleEngineConfiguration, _ruleLogger);
+            _ruleService = new RuleService<T>(_model, rules, _ruleEngineConfiguration);
 
             _ruleService.Invoke();
 

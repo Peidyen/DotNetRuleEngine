@@ -53,4 +53,12 @@ namespace DotNetRuleEngine.Core.Extensions
             return RuleType.None;
         }
     }
+
+    public enum RuleType
+    {
+        None,
+        PreActiveRule,
+        ReActiveRule,
+        ExceptionHandlerRule
+    }
 }
