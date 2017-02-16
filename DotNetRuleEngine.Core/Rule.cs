@@ -9,7 +9,7 @@ namespace DotNetRuleEngine.Core
 {
     public abstract class Rule<T> : IRule<T> where T : class, new()
     {
-        private IList<object> Rules { get; set; } = new List<object>();
+        private IList<object> Rules { get; } = new List<object>();
 
         public T Model { get; set; }
 
@@ -29,15 +29,21 @@ namespace DotNetRuleEngine.Core
 
         public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 
-        public object TryGetValue(string key, int timeoutInMs = RuleDataService.DefaultTimeoutInMs) =>
-            RuleDataService.GetInstance().GetValue(key, Configuration);
+        public object TryGetValue(string key, int timeoutInMs = DataSharingService.DefaultTimeoutInMs) =>
+            DataSharingService.GetInstance().GetValue(key, Configuration);
 
         public void TryAdd(string key, object value) =>
-            RuleDataService.GetInstance().AddOrUpdate(key, value, Configuration);
+            DataSharingService.GetInstance().AddOrUpdate(key, value, Configuration);
 
         public IList<object> GetRules() => Rules;
 
-        public void AddRules(params object[] rules) => Rules = rules;
+        public void AddRules(params object[] rules)
+        {
+            foreach (var rule in rules)
+            {
+                Rules.Add(rule);
+            }
+        }
 
         public virtual void Initialize() { }
 

@@ -8,11 +8,11 @@ using DotNetRuleEngineTimeOutException = DotNetRuleEngine.Core.Exceptions.Timeou
 
 namespace DotNetRuleEngine.Core.Services
 {
-    internal sealed class RuleDataService
+    internal sealed class DataSharingService
     {
-        private static readonly Lazy<RuleDataService> DataManager = new Lazy<RuleDataService>(() => new RuleDataService(), true);
+        private static readonly Lazy<DataSharingService> DataManager = new Lazy<DataSharingService>(() => new DataSharingService(), true);
 
-        private RuleDataService() {}
+        private DataSharingService() {}
 
         private Lazy<ConcurrentDictionary<string, Task<object>>> AsyncData { get; } = new Lazy<ConcurrentDictionary<string, Task<object>>>(
             () => new ConcurrentDictionary<string, Task<object>>(), true);
@@ -20,7 +20,7 @@ namespace DotNetRuleEngine.Core.Services
         private Lazy<ConcurrentDictionary<string, object>> Data { get; } = new Lazy<ConcurrentDictionary<string, object>>(
            () => new ConcurrentDictionary<string, object>(), true);
 
-        public const int DefaultTimeoutInMs = 15000;
+        internal const int DefaultTimeoutInMs = 15000;
 
         public async Task AddOrUpdateAsync<T>(string key, Task<object> value, IConfiguration<T> configuration)
         {
@@ -72,7 +72,7 @@ namespace DotNetRuleEngine.Core.Services
             throw new DotNetRuleEngineTimeOutException($"Unable to get {key}");
         }
 
-        public static RuleDataService GetInstance() => DataManager.Value;
+        public static DataSharingService GetInstance() => DataManager.Value;
 
         private static string[] BuildKey(string key, string ruleengineId) => new[] { string.Join("_", ruleengineId, key), key };
 

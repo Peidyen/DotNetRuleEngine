@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -43,9 +47,12 @@
   <ItemGroup>
     <Compile Include="Exceptions\DependencyResolverNotFoundException.cs" />
     <Compile Include="Exceptions\TimeoutException.cs" />
+    <Compile Include="Exceptions\UnsupportedRuleConfiguration.cs" />
     <Compile Include="Exceptions\UnsupportedRuleException.cs" />
-    <Compile Include="Services\RuleInitializationService.cs" />
-    <Compile Include="Services\ActiveRuleService.cs" />
+    <Compile Include="Models\Monitor.cs" />
+    <Compile Include="Models\ParallelConfiguration.cs" />
+    <Compile Include="Services\BootstrapService.cs" />
+    <Compile Include="Services\RxRuleService.cs" />
     <Compile Include="Services\AsyncRuleService.cs" />
     <Compile Include="Models\Configuration.cs" />
     <Compile Include="Models\Error.cs" />
@@ -54,7 +61,7 @@
     <Compile Include="Extensions\InternalExtensions.cs" />
     <Compile Include="Rule.cs" />
     <Compile Include="RuleAsync.cs" />
-    <Compile Include="Services\RuleDataService.cs" />
+    <Compile Include="Services\DataSharingService.cs" />
     <Compile Include="Models\RuleEngineConfiguration.cs" />
     <Compile Include="Models\RuleResult.cs" />
     <Compile Include="RuleEngine.cs" />
@@ -73,6 +80,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

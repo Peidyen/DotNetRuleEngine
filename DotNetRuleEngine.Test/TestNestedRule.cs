@@ -1,5 +1,6 @@
 ﻿using DotNetRuleEngine.Core;
 using DotNetRuleEngine.Core.Extensions;
+using DotNetRuleEngine.Core.Models;
 using DotNetRuleEngine.Test.Models;
 using DotNetRuleEngine.Test.Rules;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -32,5 +33,25 @@ namespace DotNetRuleEngine.Test
             Assert.IsNotNull(errors);
             Assert.AreEqual("Error", errors.FindRuleResult<ProductChildErrorRule>().Error.Message);
         }
+
+        [TestMethod]
+        public void TestNestedRuleInheritsConstraint()
+        {
+            var ruleEngineExecutor = RuleEngine<Product>.GetInstance(new Product { Price = 49.99m });
+            ruleEngineExecutor.AddRules(new ProductNestedRule
+            {
+
+                Configuration = new Configuration<Product>
+                {
+                    Constraint = product => product.Price > 50,
+                    NestedRulesInheritConstraint = true
+                }
+            });
+
+            var ruleResults = ruleEngineExecutor.Execute();
+                        
+            Assert.AreEqual(0, ruleResults.Length);
+        }
+
     }
 }

@@ -10,22 +10,27 @@ namespace DotNetRuleEngine.Core.Services
     internal class RuleService<T> where T : class, new()
     {
         private readonly T _model;
+        private readonly IList<IRule<T>> _rules;
         private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
-        private readonly ActiveRuleService<T> _activeRuleService;
+        private readonly IRuleLogger _ruleLogger;
+        private readonly RxRuleService<IRule<T>, T> _rxRuleService;
         private readonly ICollection<IRuleResult> _ruleResults = new List<IRuleResult>();
 
-        public RuleService(T model, IEnumerable<IGeneralRule<T>> rules,
-            IRuleEngineConfiguration<T> ruleEngineConfiguration)
+        public RuleService(T model, IList<IRule<T>> rules,
+            IRuleEngineConfiguration<T> ruleEngineConfiguration, IRuleLogger ruleLogger = null)
         {
             _model = model;
-            _activeRuleService = new ActiveRuleService<T>(rules);
+            _rules = rules;
+            _rxRuleService = new RxRuleService<IRule<T>, T>(_rules);
             _ruleEngineConfiguration = ruleEngineConfiguration;
+            _ruleLogger = ruleLogger;
         }
 
-        public void Invoke(IEnumerable<IGeneralRule<T>> rules)
-            => Execute(_activeRuleService.FilterActivatingRules(rules));
+        public void Invoke() => Execute(_rxRuleService.FilterRxRules(_rules));
 
-        private void Execute(IEnumerable<IGeneralRule<T>> rules)
+        public IRuleResult[] GetRuleResults() => _ruleResults.ToArray();
+
+        private void Execute(IList<IRule<T>> rules)
         {
             foreach (var rule in OrderByExecutionOrder(rules))
             {
@@ -46,13 +51,20 @@ namespace DotNetRuleEngine.Core.Services
                         TraceMessage.Verbose(rule, TraceMessage.AfterInvoke);
                         rule.AfterInvoke();
 
+                        _ruleLogger?.Write(rule.GetRuleEngineId(), new RuleModel<T>(rule.Model)
+                        {
+                            RuleType = rule.GetRuleType(),
+                            Rule = rule.GetRuleName(),
+                            ObservingRule = rule.ObserveRule?.Name
+                        });
+
                         AddToRuleResults(ruleResult, rule.GetType().Name);
                     }
 
                     catch (Exception exception)
                     {
                         rule.UnhandledException = exception;
-                        if (_activeRuleService.GetExceptionRules().ContainsKey(rule.GetType()))
+                        if (_rxRuleService.GetExceptionRules().ContainsKey(rule.GetType()))
                         {
                             InvokeExceptionRules(rule);
                         }
@@ -71,53 +83,53 @@ namespace DotNetRuleEngine.Core.Services
             }
         }
 
-        public IRuleResult[] GetRuleResults() => _ruleResults.ToArray();
-
-        private void InvokeReactiveRules(IRule<T> rule)
+        private void InvokeReactiveRules(IGeneralRule<T> rule)
         {
-            if (_activeRuleService.GetReactiveRules().ContainsKey(rule.GetType()))
+            if (_rxRuleService.GetReactiveRules().ContainsKey(rule.GetType()))
             {
-                Execute(_activeRuleService.GetReactiveRules()[rule.GetType()].OfType<IRule<T>>());
+                Execute(_rxRuleService.GetReactiveRules()[rule.GetType()].ToList());
             }
         }
 
         private void InvokePreactiveRules(IRule<T> rule)
         {
-            if (_activeRuleService.GetPreactiveRules().ContainsKey(rule.GetType()))
+            if (_rxRuleService.GetPreactiveRules().ContainsKey(rule.GetType()))
             {
-                Execute(_activeRuleService.GetPreactiveRules()[rule.GetType()].OfType<IRule<T>>());
+                Execute(_rxRuleService.GetPreactiveRules()[rule.GetType()].ToList());
             }
         }
 
-        private void InvokeExceptionRules(IGeneralRule<T> rule)
+        private void InvokeExceptionRules(IRule<T> rule)
         {
-            var exceptionRules = _activeRuleService.GetExceptionRules()[rule.GetType()].OfType<IRule<T>>().ToList();
+            var exceptionRules = _rxRuleService.GetExceptionRules()[rule.GetType()]
+                .Select(r =>
+                {
+                    r.UnhandledException = rule.UnhandledException;
+                    return r;
+                });
 
-            exceptionRules.ForEach(exceptionRule => exceptionRule.UnhandledException = rule.UnhandledException);
-
-            Execute(exceptionRules);
+            Execute(exceptionRules.ToList());
         }
 
         private void AddToRuleResults(IRuleResult ruleResult, string ruleName)
         {
             ruleResult.AssignRuleName(ruleName);
-
             if (ruleResult != null) _ruleResults.Add(ruleResult);
         }
 
-        private void InvokeNestedRules(bool invokeNestedRules, IGeneralRule<T> rule)
+        private void InvokeNestedRules(bool invokeNestedRules, IRule<T> rule)
         {
             if (invokeNestedRules && rule.IsNested)
             {
-                Execute(_activeRuleService.FilterActivatingRules(OrderByExecutionOrder(rule.GetResolvedRules())));
+                Execute(_rxRuleService.FilterRxRules(OrderByExecutionOrder(rule.GetRules().OfType<IRule<T>>().ToList())));
             }
         }
 
-        private static IEnumerable<IRule<T>> OrderByExecutionOrder(IEnumerable<IGeneralRule<T>> rules)
+        private static IList<IRule<T>> OrderByExecutionOrder(IList<IRule<T>> rules)
         {
-            rules = rules.ToList();
             return rules.GetRulesWithExecutionOrder().OfType<IRule<T>>()
-                    .Concat(rules.GetRulesWithoutExecutionOrder().OfType<IRule<T>>());
+                .Concat(rules.GetRulesWithoutExecutionOrder().OfType<IRule<T>>())
+                .ToList();
         }
     }
 }

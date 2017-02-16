@@ -48,15 +48,5 @@ namespace DotNetRuleEngine.Test
             Assert.AreEqual(8, ruleResults.Length);
 
         }
-
-        [TestMethod]
-        public void TestNestedParallelRules2()
-        {
-            Foo f = new Foo();
-            var rr = RuleEngine<Foo>.GetInstance(f)
-                .ApplyRules(new UpdateName())
-                .ExecuteAsync().Result;
-
-        }
     }
 }

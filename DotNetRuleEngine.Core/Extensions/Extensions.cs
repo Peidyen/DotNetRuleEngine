@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DotNetRuleEngine.Core.Interface;
+using DotNetRuleEngine.Core.Models;
 
 namespace DotNetRuleEngine.Core.Extensions
 {
@@ -11,6 +12,12 @@ namespace DotNetRuleEngine.Core.Extensions
         public static T To<T>(this object @object) => @object != null ? (T)@object : default(T);
 
         public static T To<T>(this Task<object> @object) => @object != null ? (T)@object.Result : default(T);
+
+        public static Guid GetRuleEngineId<T>(this IGeneralRule<T> rule) where T : class, new() =>
+            rule.Configuration.To<RuleEngineConfiguration<T>>().RuleEngineId;
+
+        public static string GetRuleName<T>(this IGeneralRule<T> rule) where T : class, new() =>
+            rule.GetType().Name;
 
         public static IRuleResult FindRuleResult<T>(this IEnumerable<IRuleResult> ruleResults) =>
             ruleResults.FirstOrDefault(r => string.Equals(r.Name, typeof(T).Name, StringComparison.InvariantCultureIgnoreCase));
@@ -36,5 +43,14 @@ namespace DotNetRuleEngine.Core.Extensions
             => ruleResults.Where(r => r.Error != null);
 
         public static bool AnyError(this IEnumerable<IRuleResult> ruleResults) => ruleResults.Any(r => r.Error != null);
+
+        public static RuleType GetRuleType<T>(this IGeneralRule<T> rule) where T : class, new()
+        {
+            if (rule.IsPreactive) return RuleType.PreActiveRule;
+            if (rule.IsReactive) return RuleType.ReActiveRule;
+            if (rule.IsExceptionHandler) return RuleType.ExceptionHandlerRule;
+
+            return RuleType.None;
+        }
     }
 }

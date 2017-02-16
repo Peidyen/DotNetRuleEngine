@@ -8,7 +8,7 @@ namespace DotNetRuleEngine.Core.Extensions
 {
     internal static class InternalExtensions
     {
-        public static bool CanInvoke<T>(this IGeneralRule<T> rule, T model, bool terminated) where T : class, new() => 
+        public static bool CanInvoke<T>(this IGeneralRule<T> rule, T model, bool terminated) where T : class, new() =>
             !rule.Configuration.Skip && rule.Configuration.Constraint.Invoke2(model) && !terminated;
 
         public static bool Invoke2<T>(this Predicate<T> predicate, T model) =>
@@ -37,7 +37,7 @@ namespace DotNetRuleEngine.Core.Extensions
         public static bool IsRuleEngineTerminated<T>(this IConfiguration<T> ruleEngineConfiguration) where T : class, new()
             => ruleEngineConfiguration.Terminate != null && ruleEngineConfiguration.Terminate.Value;
 
-        public static ICollection<IGeneralRule<T>> GetRulesWithExecutionOrder<T>(this IEnumerable<IGeneralRule<T>> rules,
+        public static IList<IGeneralRule<T>> GetRulesWithExecutionOrder<T>(this IEnumerable<IGeneralRule<T>> rules,
             Func<IGeneralRule<T>, bool> condition = null) where T : class, new()
         {
             condition = condition ?? (rule => true);
@@ -48,7 +48,7 @@ namespace DotNetRuleEngine.Core.Extensions
                 .ToList();
         }
 
-        public static ICollection<IGeneralRule<T>> GetRulesWithoutExecutionOrder<T>(this IEnumerable<IGeneralRule<T>> rules,
+        public static IList<IGeneralRule<T>> GetRulesWithoutExecutionOrder<T>(this IEnumerable<IGeneralRule<T>> rules,
             Func<IGeneralRule<T>, bool> condition = null) where T : class, new()
         {
             condition = condition ?? (k => true);
@@ -58,11 +58,5 @@ namespace DotNetRuleEngine.Core.Extensions
                 .AsParallel()
                 .ToList();
         }
-
-        public static IEnumerable<IGeneralRule<T>> GetResolvedRules<T>(this IGeneralRule<T> rule) where T : class, new()
-        {
-            return rule.GetRules().OfType<IGeneralRule<T>>();
-        }
-
     }
 }

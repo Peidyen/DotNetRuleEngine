@@ -32,15 +32,17 @@ namespace DotNetRuleEngine.Core
 
         public IConfiguration<T> Configuration { get; set; } = new Configuration<T>();
 
-        public async Task<object> TryGetValueAsync(string key, int timeoutInMs = RuleDataService.DefaultTimeoutInMs) => 
-            await RuleDataService.GetInstance().GetValueAsync(key, Configuration, timeoutInMs);
+        public IParellelConfiguration<T> ParellelConfiguration { get; set; } = new ParallelConfiguration<T>();
+
+        public async Task<object> TryGetValueAsync(string key, int timeoutInMs = DataSharingService.DefaultTimeoutInMs) => 
+            await DataSharingService.GetInstance().GetValueAsync(key, Configuration, timeoutInMs);
 
         public async Task TryAddAsync(string key, Task<object> value) => 
-            await RuleDataService.GetInstance().AddOrUpdateAsync(key, value, Configuration);
+            await DataSharingService.GetInstance().AddOrUpdateAsync(key, value, Configuration);
 
         public IList<object> GetRules() => Rules;
-        
-        public void AddRules(params object[] rules) => Rules = rules;
+
+        public void AddRules(params object[] rules) => Rules = rules.ToList();        
 
         public virtual async Task InitializeAsync() => await Task.FromResult<object>(null);
 

@@ -20,9 +20,11 @@ namespace DotNetRuleEngine.Core
         private AsyncRuleService<T> _asyncRuleService;
         private readonly List<object> _rules = new List<object>();
         private readonly Guid _ruleEngineId = Guid.NewGuid();
-        private readonly RuleEngineConfiguration<T> _ruleEngineConfiguration = 
+        private readonly RuleEngineConfiguration<T> _ruleEngineConfiguration =
             new RuleEngineConfiguration<T>(new Configuration<T>());
-        
+
+        private IRuleLogger _ruleLogger;
+
         /// <summary>
         /// Rule engine ctor.
         /// </summary>
@@ -39,9 +41,15 @@ namespace DotNetRuleEngine.Core
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="dependencyResolver"></param>
+        /// <param name="ruleLogger"></param>
         /// <returns></returns>
-        public static RuleEngine<T> GetInstance(T instance = null, IDependencyResolver dependencyResolver = null) => 
-            new RuleEngine<T> {_model = instance, _dependencyResolver = dependencyResolver};
+        public static RuleEngine<T> GetInstance(T instance = null, IDependencyResolver dependencyResolver = null, IRuleLogger ruleLogger = null) =>
+            new RuleEngine<T>
+            {
+                _model = instance,
+                _dependencyResolver = dependencyResolver,
+                _ruleLogger = ruleLogger
+            };
 
         /// <summary>
         /// Used to add rules to nestingRule engine.
@@ -61,15 +69,14 @@ namespace DotNetRuleEngine.Core
         /// <returns></returns>
         public async Task<IRuleResult[]> ExecuteAsync()
         {
-
             if (!_rules.Any()) return await _asyncRuleService.GetAsyncRuleResultsAsync();
 
-            var initializedRules = await new RuleInitializationService<T>(_model, _ruleEngineId, _dependencyResolver)
-                .InitializeAsync(_rules);
-                
-            _asyncRuleService = new AsyncRuleService<T>(_model, initializedRules, _ruleEngineConfiguration);
+            var rules = await new BootstrapService<T>(_model, _ruleEngineId, _dependencyResolver)
+                .BootstrapAsync(_rules);
 
-            await _asyncRuleService.InvokeAsyncRules(initializedRules);
+            _asyncRuleService = new AsyncRuleService<T>(_model, rules, _ruleEngineConfiguration, _ruleLogger);
+
+            await _asyncRuleService.InvokeAsyncRules();
 
             return await _asyncRuleService.GetAsyncRuleResultsAsync();
         }
@@ -82,12 +89,12 @@ namespace DotNetRuleEngine.Core
         {
             if (!_rules.Any()) return _ruleService.GetRuleResults();
 
-            var initializedRules = new RuleInitializationService<T>(_model, _ruleEngineId, _dependencyResolver)
-                .Initialize(_rules);
+            var rules = new BootstrapService<T>(_model, _ruleEngineId, _dependencyResolver)
+                .Bootstrap(_rules);
 
-            _ruleService = new RuleService<T>(_model, initializedRules, _ruleEngineConfiguration);
+            _ruleService = new RuleService<T>(_model, rules, _ruleEngineConfiguration, _ruleLogger);
 
-            _ruleService.Invoke(initializedRules);
+            _ruleService.Invoke();
 
             return _ruleService.GetRuleResults();
         }

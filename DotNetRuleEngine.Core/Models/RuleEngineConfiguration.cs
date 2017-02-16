@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq.Expressions;
 using DotNetRuleEngine.Core.Interface;
 
 namespace DotNetRuleEngine.Core.Models

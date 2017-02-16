@@ -21,7 +21,7 @@ namespace DotNetRuleEngine.Core.Interface
 
         IDependencyResolver Resolve { get; set; }
 
-        IConfiguration<T> Configuration { get; set;  }
+        IConfiguration<T> Configuration { get; set; }
 
         IList<object> GetRules();
 
