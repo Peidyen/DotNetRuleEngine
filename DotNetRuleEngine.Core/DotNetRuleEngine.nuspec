@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
     <metadata>
         <id>DotNetRuleEngine</id>
-        <version>3.0.4</version>
+        <version>3.0.5</version>
         <title>DotNetRuleEngine</title>
         <authors>Arif Yayalar</authors>
         <owners>Arif Yayalar</owners>
@@ -15,8 +15,7 @@ See doc. at https://github.com/ayayalar/DotNetRuleEngine/wiki</description>
         <summary>Rule Based Software Development
 S.O.L.I.D compliant.
 Rules Engine</summary>
-        <releaseNotes>- Nested rules can now take advantage of dependency injection
-- Other minor enhancements
+        <releaseNotes>- Other minor enhancements
 
 See doc. at https://github.com/ayayalar/DotNetRuleEngine/wiki</releaseNotes>
         <copyright>MIT</copyright>
