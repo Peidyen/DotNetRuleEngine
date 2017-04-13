@@ -14,6 +14,8 @@ PM> Install-Package DotNetRuleEngine
 ```
 Nuget package available at: [DotNetRuleEngine](https://www.nuget.org/packages/DotNetRuleEngine "DotNetRuleEngine")
 
+**.NET Core Version available now! [DotNetRuleEngine.Core](https://www.nuget.org/packages/DotNetRuleEngine.Core "DotNetRuleEngine.Core")**
+
 
 Get Started at: [DotNetRuleEngine Wiki](https://github.com/ayayalar/DotNetRuleEngine/wiki)
 
