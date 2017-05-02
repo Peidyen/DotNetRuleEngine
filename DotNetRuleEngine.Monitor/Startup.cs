@@ -59,6 +59,9 @@ namespace DotNetRuleEngine.Monitor
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
+
+            app.UseSwagger();
+            app.UseSwaggerUi();
         }
     }
 }

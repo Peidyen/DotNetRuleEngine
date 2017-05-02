@@ -10,7 +10,7 @@ namespace DotNetRuleEngine.Monitor.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "DotNetRuleEngineModel",
+                name: "DotNetRuleEngineDomain",
                 columns: table => new
                 {
                     DotNetRuleEngineModelId = table.Column<int>(nullable: false)
@@ -42,14 +42,14 @@ namespace DotNetRuleEngine.Monitor.Migrations
                     table.ForeignKey(
                         name: "FK_RuleModel_DotNetRuleEngineModel_DotNetRuleEngineModelId",
                         column: x => x.DotNetRuleEngineModelId,
-                        principalTable: "DotNetRuleEngineModel",
+                        principalTable: "DotNetRuleEngineDomain",
                         principalColumn: "DotNetRuleEngineModelId",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
                 name: "IX_DotNetRuleEngineModel_RuleEngineId",
-                table: "DotNetRuleEngineModel",
+                table: "DotNetRuleEngineDomain",
                 column: "RuleEngineId");
 
             migrationBuilder.CreateIndex(
@@ -64,7 +64,7 @@ namespace DotNetRuleEngine.Monitor.Migrations
                 name: "RuleModel");
 
             migrationBuilder.DropTable(
-                name: "DotNetRuleEngineModel");
+                name: "DotNetRuleEngineDomain");
         }
     }
 }

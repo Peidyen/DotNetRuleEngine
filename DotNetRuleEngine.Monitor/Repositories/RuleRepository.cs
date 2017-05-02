@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNetRuleEngine.Monitor.Models;
+using DotNetRuleEngine.Monitor.Domain;
 using Microsoft.EntityFrameworkCore;
-
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DotNetRuleEngine.Monitor.Repositories
 {
@@ -16,9 +16,9 @@ namespace DotNetRuleEngine.Monitor.Repositories
             _context = context;
         }
 
-        public void Put(Guid ruleEngineId, RuleModel model)
+        public void Put(Guid ruleEngineId, Model model)
         {
-            DotNetRuleEngineModel dotnetRuleEngineModel = null;
+            RuleEngine dotnetRuleEngineModel = null;
             try
             {
                 dotnetRuleEngineModel = _context.DotNetRuleEngineModel
@@ -27,10 +27,10 @@ namespace DotNetRuleEngine.Monitor.Repositories
 
                 if (dotnetRuleEngineModel == null)
                 {
-                    dotnetRuleEngineModel = new DotNetRuleEngineModel
+                    dotnetRuleEngineModel = new RuleEngine
                     {
                         RuleEngineId = ruleEngineId,
-                        RuleModels = new List<RuleModel> {model}
+                        RuleModels = new List<Model> {model}
                     };
 
                     _context.DotNetRuleEngineModel.Add(dotnetRuleEngineModel);
@@ -53,7 +53,7 @@ namespace DotNetRuleEngine.Monitor.Repositories
             }
         }
 
-        private void HandleDbUpdateException(Guid ruleEngineId, RuleModel model, DotNetRuleEngineModel dotnetRuleEngineModel)
+        private void HandleDbUpdateException(Guid ruleEngineId, Model model, RuleEngine dotnetRuleEngineModel)
         {
             if (dotnetRuleEngineModel != null &&
                 _context.Entry(dotnetRuleEngineModel).State == EntityState.Added)
@@ -74,7 +74,7 @@ namespace DotNetRuleEngine.Monitor.Repositories
             }
         }
 
-        public DotNetRuleEngineModel Get(Guid ruleEngineId)
+        public RuleEngine Get(Guid ruleEngineId)
         {
             return _context.DotNetRuleEngineModel
                 .Include(rm => rm.RuleModels)

@@ -16,7 +16,7 @@ namespace DotNetRuleEngine.Monitor.Migrations
                 .HasAnnotation("ProductVersion", "1.1.0-rtm-22752")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
-            modelBuilder.Entity("DotNetRuleEngine.Monitor.Models.DotNetRuleEngineModel", b =>
+            modelBuilder.Entity("DotNetRuleEngine.Monitor.Models.DotNetRuleEngineDomain", b =>
                 {
                     b.Property<int>("DotNetRuleEngineModelId")
                         .ValueGeneratedOnAdd();
@@ -33,7 +33,7 @@ namespace DotNetRuleEngine.Monitor.Migrations
 
                     b.HasIndex("RuleEngineId");
 
-                    b.ToTable("DotNetRuleEngineModel");
+                    b.ToTable("DotNetRuleEngineDomain");
                 });
 
             modelBuilder.Entity("DotNetRuleEngine.Monitor.Models.RuleModel", b =>
@@ -62,7 +62,7 @@ namespace DotNetRuleEngine.Monitor.Migrations
 
             modelBuilder.Entity("DotNetRuleEngine.Monitor.Models.RuleModel", b =>
                 {
-                    b.HasOne("DotNetRuleEngine.Monitor.Models.DotNetRuleEngineModel")
+                    b.HasOne("DotNetRuleEngine.Monitor.Models.DotNetRuleEngineDomain")
                         .WithMany("RuleModels")
                         .HasForeignKey("DotNetRuleEngineModelId")
                         .OnDelete(DeleteBehavior.Cascade);

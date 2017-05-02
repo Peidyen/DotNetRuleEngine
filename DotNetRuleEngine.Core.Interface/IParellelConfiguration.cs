@@ -10,5 +10,7 @@ namespace DotNetRuleEngine.Core.Interface
         CancellationTokenSource CancellationTokenSource { get; set; }
 
         TaskScheduler TaskScheduler { get; set; }
+
+        bool NestedParallelRulesInherit { get; set; }
     }
 }

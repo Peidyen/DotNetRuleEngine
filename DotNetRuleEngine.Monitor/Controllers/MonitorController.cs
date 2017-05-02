@@ -1,23 +1,31 @@
 ﻿using System;
-using System.Threading.Tasks;
+using DotNetRuleEngine.Monitor.Converters;
 using DotNetRuleEngine.Monitor.Models;
 using DotNetRuleEngine.Monitor.Repositories;
+using DotNetRuleEngine.Monitor.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace DotNetRuleEngine.Monitor.Controllers
 {
     [Route("api/[controller]")]
     public class MonitorController : Controller
     {
-        private readonly IModelRepository _modelRepository;
+        private readonly RuleEngineConverter _ruleEngineConverter;
+        private readonly ModelConverter _modelConverter;
+        private readonly RuleEngineService _ruleEngineService;
 
-        public MonitorController(IModelRepository modelRepository)
+        public MonitorController(IModelRepository modelRepository, 
+            RuleEngineConverter ruleEngineConverter,
+            RuleEngineService ruleEngineService, ModelConverter modelConverter)
         {
-            _modelRepository = modelRepository;
+            _ruleEngineConverter = ruleEngineConverter;
+            _ruleEngineService = ruleEngineService;
+            _modelConverter = modelConverter;
         }
 
         [HttpPut("{id}")]
-        public IActionResult Put(string id, [FromBody]RuleModel ruleModel)
+        public IActionResult Put(string id, [FromBody]Model model)
         {
             Guid dotnetRuleEngineId;
             if (!Guid.TryParse(id, out dotnetRuleEngineId))
@@ -25,7 +33,8 @@ namespace DotNetRuleEngine.Monitor.Controllers
                 return BadRequest();
             }
 
-            _modelRepository.Put(Guid.Parse(id), ruleModel);
+            _ruleEngineService.Add(dotnetRuleEngineId, _modelConverter.Convert(model));
+            
             return NoContent();
         }
 
@@ -39,8 +48,9 @@ namespace DotNetRuleEngine.Monitor.Controllers
                 return BadRequest();
             }
 
-            _modelRepository.Get(Guid.Parse(id));
-            return NoContent();
+            var dotNetRuleEngineModel = _ruleEngineService.Get(dotnetRuleEngineId);
+
+            return Ok(_ruleEngineConverter.Convert(dotNetRuleEngineModel));
         }
     }
 }

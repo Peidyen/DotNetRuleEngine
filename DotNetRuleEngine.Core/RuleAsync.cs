@@ -49,5 +49,7 @@ namespace DotNetRuleEngine.Core
         public virtual async Task AfterInvokeAsync() => await Task.FromResult<object>(null);
 
         public abstract Task<IRuleResult> InvokeAsync();
+
+        public IParellelConfiguration<T> ParellelConfiguration { get; set; } = new ParallelConfiguration<T>();
     }
 }

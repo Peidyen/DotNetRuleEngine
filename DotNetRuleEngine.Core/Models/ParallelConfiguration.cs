@@ -8,8 +8,10 @@ namespace DotNetRuleEngine.Core.Models
     {        
         public TaskCreationOptions TaskCreationOptions { get; set; } = TaskCreationOptions.None;
 
-        public CancellationTokenSource CancellationTokenSource { get; set; }        
+        public CancellationTokenSource CancellationTokenSource { get; set; }
 
         public TaskScheduler TaskScheduler { get; set; } = TaskScheduler.Default;
+
+        public bool NestedParallelRulesInherit { get; set; }
     }
 }

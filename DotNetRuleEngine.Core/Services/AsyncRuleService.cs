@@ -21,12 +21,13 @@ namespace DotNetRuleEngine.Core.Services
         private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = new ConcurrentBag<Task<IRuleResult>>();
 
         public AsyncRuleService(T model, IList<IRuleAsync<T>> rules,
-            IRuleEngineConfiguration<T> ruleEngineTerminated)
+            IRuleEngineConfiguration<T> ruleEngineTerminated, IRuleLogger ruleLogger = null)
         {
             _model = model;
             _rules = rules;
             _rxRuleService = new RxRuleService<IRuleAsync<T>, T>(_rules);
             _ruleEngineConfiguration = ruleEngineTerminated;
+            _ruleLogger = ruleLogger;
         }
 
         public async Task InvokeAsyncRules()
@@ -119,9 +120,9 @@ namespace DotNetRuleEngine.Core.Services
 
                         return ruleResult;
 
-                    }, CancellationToken.None,
-                       TaskCreationOptions.PreferFairness, 
-                       TaskScheduler.Default));
+                    }, rule.ParellelConfiguration.CancellationTokenSource?.Token ?? CancellationToken.None,
+                        rule.ParellelConfiguration.TaskCreationOptions,
+                        rule.ParellelConfiguration.TaskScheduler));
 
                     await InvokeReactiveRulesAsync(rule);
                 }
@@ -135,23 +136,25 @@ namespace DotNetRuleEngine.Core.Services
             TraceMessage.Verbose(rule, TraceMessage.BeforeInvokeAsync);
             await rule.BeforeInvokeAsync();
 
-            if (rule.IsParallel && rule.ParellelConfiguration.CancellationTokenSource == null ||
-                 !rule.ParellelConfiguration.CancellationTokenSource.Token.IsCancellationRequested)
-            {                
-                TraceMessage.Verbose(rule, TraceMessage.InvokeAsync);
-                ruleResult = await rule.InvokeAsync();
+            if (rule.IsParallel && rule.ParellelConfiguration.CancellationTokenSource != null &&
+                rule.ParellelConfiguration.CancellationTokenSource.Token.IsCancellationRequested)
+            {
+                return null;
+            }
 
-                TraceMessage.Verbose(rule, TraceMessage.AfterInvokeAsync);
-                await rule.AfterInvokeAsync();
+            TraceMessage.Verbose(rule, TraceMessage.InvokeAsync);
+            var ruleResult = await rule.InvokeAsync();
 
-                _ruleLogger?.Write(rule.GetRuleEngineId(), new RuleModel<T>(rule.Model)
-                {
-                    RuleType = rule.GetRuleType(),
-                    ObservingRule = rule.ObserveRule.Name
-                });
+            TraceMessage.Verbose(rule, TraceMessage.AfterInvokeAsync);
+            await rule.AfterInvokeAsync();
 
-                ruleResult.AssignRuleName(rule.GetType().Name);
-            }           
+            _ruleLogger?.Write(rule.GetRuleEngineId(), new RuleModel<T>(rule.Model)
+            {
+                RuleType = rule.GetRuleType(),
+                ObservingRule = rule.ObserveRule.Name
+            });
+
+            ruleResult.AssignRuleName(rule.GetType().Name);
 
             return ruleResult;
         }

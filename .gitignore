@@ -4,3 +4,6 @@
 *.user
 *.Tmp
 .vs/*
+packages/
+Backup/
+UpgradeLog.htm

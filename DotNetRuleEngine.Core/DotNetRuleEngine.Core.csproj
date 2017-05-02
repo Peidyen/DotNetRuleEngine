@@ -48,6 +48,7 @@
     <Compile Include="Exceptions\DependencyResolverNotFoundException.cs" />
     <Compile Include="Exceptions\TimeoutException.cs" />
     <Compile Include="Exceptions\UnsupportedRuleException.cs" />
+    <Compile Include="Models\ParallelConfiguration.cs" />
     <Compile Include="Services\BootstrapService.cs" />
     <Compile Include="Services\RxRuleService.cs" />
     <Compile Include="Services\AsyncRuleService.cs" />

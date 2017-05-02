@@ -1,12 +1,12 @@
 ﻿using System;
-using DotNetRuleEngine.Monitor.Models;
+using DotNetRuleEngine.Monitor.Domain;
 
 namespace DotNetRuleEngine.Monitor.Repositories
 {
     public interface IModelRepository
     {
-        void Put(Guid id, RuleModel model);
+        void Put(Guid id, Model model);
 
-        DotNetRuleEngineModel Get(Guid ruleEngineId);
+        RuleEngine Get(Guid ruleEngineId);
     }
 }
