@@ -118,9 +118,9 @@ namespace DotNetRuleEngine.Core.Services
 
                         return ruleResult;
 
-                    }, CancellationToken.None,
-                       TaskCreationOptions.PreferFairness, 
-                       TaskScheduler.Default));
+                    }, rule.ParellelConfiguration.CancellationTokenSource?.Token ?? CancellationToken.None,
+                        rule.ParellelConfiguration.TaskCreationOptions,
+                        rule.ParellelConfiguration.TaskScheduler));
 
                     await InvokeReactiveRulesAsync(rule);
                 }
@@ -133,6 +133,12 @@ namespace DotNetRuleEngine.Core.Services
         {
             TraceMessage.Verbose(rule, TraceMessage.BeforeInvokeAsync);
             await rule.BeforeInvokeAsync();
+
+            if (rule.IsParallel && rule.ParellelConfiguration.CancellationTokenSource != null &&
+                rule.ParellelConfiguration.CancellationTokenSource.Token.IsCancellationRequested)
+            {
+                return null;
+            }
 
             TraceMessage.Verbose(rule, TraceMessage.InvokeAsync);
             var ruleResult = await rule.InvokeAsync();

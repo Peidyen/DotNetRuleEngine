@@ -83,6 +83,26 @@ namespace DotNetRuleEngine.Core.Services
                 rule.Configuration.NestedRulesInheritConstraint = true;
             }
 
+            var parallelRule = rule as RuleAsync<T>;
+            var nestingParallelRule = nestingRule as RuleAsync<T>;
+
+            if (parallelRule != null && parallelRule.IsParallel &&
+                nestingParallelRule!= null)
+            {
+                if (nestingParallelRule.ParellelConfiguration != null &&
+                    nestingParallelRule.ParellelConfiguration.NestedParallelRulesInherit)
+                {
+                    var cancellationTokenSource = parallelRule.ParellelConfiguration.CancellationTokenSource;
+                    parallelRule.ParellelConfiguration = new ParallelConfiguration<T>
+                    {
+                        NestedParallelRulesInherit = true,
+                        CancellationTokenSource = cancellationTokenSource,
+                        TaskCreationOptions = nestingParallelRule.ParellelConfiguration.TaskCreationOptions,
+                        TaskScheduler = nestingParallelRule.ParellelConfiguration.TaskScheduler
+                    };
+                }
+            }
+
             rule.Resolve = _dependencyResolver;
         }
 

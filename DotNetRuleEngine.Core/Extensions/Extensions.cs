@@ -9,9 +9,9 @@ namespace DotNetRuleEngine.Core.Extensions
 {
     public static class Extensions
     {
-        public static T To<T>(this object @object) => @object != null ? (T)@object : default(T);
+        public static T To<T>(this object @object) => (T) @object;
 
-        public static T To<T>(this Task<object> @object) => @object != null ? (T)@object.Result : default(T);
+        public static T To<T>(this Task<object> @object) => (T) @object?.Result;
 
         public static Guid GetRuleEngineId<T>(this IGeneralRule<T> rule) where T : class, new() =>
             rule.Configuration.To<RuleEngineConfiguration<T>>().RuleEngineId;
@@ -52,13 +52,13 @@ namespace DotNetRuleEngine.Core.Extensions
 
             return RuleType.None;
         }
-    }
 
-    public enum RuleType
-    {
-        None,
-        PreActiveRule,
-        ReActiveRule,
-        ExceptionHandlerRule
+        public enum RuleType
+        {
+            None,
+            PreActiveRule,
+            ReActiveRule,
+            ExceptionHandlerRule
+        }
     }
 }

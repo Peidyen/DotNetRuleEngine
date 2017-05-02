@@ -45,6 +45,7 @@
     <Compile Include="IDependencyResolver.cs" />
     <Compile Include="IError.cs" />
     <Compile Include="IGeneralRule.cs" />
+    <Compile Include="IParellelConfiguration.cs" />
     <Compile Include="IRule.cs" />
     <Compile Include="IRuleAsync.cs" />
     <Compile Include="IRuleEngineConfiguration.cs" />

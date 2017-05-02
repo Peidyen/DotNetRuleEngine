@@ -22,7 +22,7 @@ namespace DotNetRuleEngine.Core
         private readonly Guid _ruleEngineId = Guid.NewGuid();
         private readonly RuleEngineConfiguration<T> _ruleEngineConfiguration =
             new RuleEngineConfiguration<T>(new Configuration<T>());
-
+        
         /// <summary>
         /// Rule engine ctor.
         /// </summary>
@@ -39,13 +39,12 @@ namespace DotNetRuleEngine.Core
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="dependencyResolver"></param>
-        /// <param name="ruleLogger"></param>
         /// <returns></returns>
         public static RuleEngine<T> GetInstance(T instance = null, IDependencyResolver dependencyResolver = null) =>
             new RuleEngine<T>
             {
                 _model = instance,
-                _dependencyResolver = dependencyResolver,
+                _dependencyResolver = dependencyResolver
             };
 
         /// <summary>

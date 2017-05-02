@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace DotNetRuleEngine.Core.Interface
+﻿namespace DotNetRuleEngine.Core.Interface
 {
     public interface IRule<T> : IGeneralRule<T> where T : class, new()
     {        
