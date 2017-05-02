@@ -49,7 +49,6 @@
     <Compile Include="IRule.cs" />
     <Compile Include="IRuleAsync.cs" />
     <Compile Include="IRuleEngineConfiguration.cs" />
-    <Compile Include="IRuleLogger.cs" />
     <Compile Include="IRuleResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

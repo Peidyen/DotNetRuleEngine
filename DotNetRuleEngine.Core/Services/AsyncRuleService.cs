@@ -15,19 +15,17 @@ namespace DotNetRuleEngine.Core.Services
         private readonly T _model;
         private readonly IList<IRuleAsync<T>> _rules;
         private readonly IRuleEngineConfiguration<T> _ruleEngineConfiguration;
-        private readonly IRuleLogger _ruleLogger;
         private readonly RxRuleService<IRuleAsync<T>, T> _rxRuleService;
         private readonly ConcurrentBag<IRuleResult> _asyncRuleResults = new ConcurrentBag<IRuleResult>();
         private readonly ConcurrentBag<Task<IRuleResult>> _parallelRuleResults = new ConcurrentBag<Task<IRuleResult>>();
 
         public AsyncRuleService(T model, IList<IRuleAsync<T>> rules,
-            IRuleEngineConfiguration<T> ruleEngineTerminated, IRuleLogger ruleLogger = null)
+            IRuleEngineConfiguration<T> ruleEngineTerminated)
         {
             _model = model;
             _rules = rules;
             _rxRuleService = new RxRuleService<IRuleAsync<T>, T>(_rules);
             _ruleEngineConfiguration = ruleEngineTerminated;
-            _ruleLogger = ruleLogger;
         }
 
         public async Task InvokeAsyncRules()
@@ -147,12 +145,6 @@ namespace DotNetRuleEngine.Core.Services
 
             TraceMessage.Verbose(rule, TraceMessage.AfterInvokeAsync);
             await rule.AfterInvokeAsync();
-
-            _ruleLogger?.Write(rule.GetRuleEngineId(), new RuleModel<T>(rule.Model)
-            {
-                RuleType = rule.GetRuleType(),
-                ObservingRule = rule.ObserveRule.Name
-            });
 
             ruleResult.AssignRuleName(rule.GetType().Name);
 

@@ -18,7 +18,6 @@ namespace DotNetRuleEngine.Core
         private IDependencyResolver _dependencyResolver;
         private RuleService<T> _ruleService;
         private AsyncRuleService<T> _asyncRuleService;
-        private IRuleLogger _ruleLogger;
         private readonly List<object> _rules = new List<object>();
         private readonly Guid _ruleEngineId = Guid.NewGuid();
         private readonly RuleEngineConfiguration<T> _ruleEngineConfiguration =
@@ -40,14 +39,12 @@ namespace DotNetRuleEngine.Core
         /// </summary>
         /// <param name="instance"></param>
         /// <param name="dependencyResolver"></param>
-        /// <param name="ruleLogger"></param>
         /// <returns></returns>
-        public static RuleEngine<T> GetInstance(T instance = null, IDependencyResolver dependencyResolver = null, IRuleLogger ruleLogger = null) =>
+        public static RuleEngine<T> GetInstance(T instance = null, IDependencyResolver dependencyResolver = null) =>
             new RuleEngine<T>
             {
                 _model = instance,
-                _dependencyResolver = dependencyResolver,
-                _ruleLogger = ruleLogger
+                _dependencyResolver = dependencyResolver
             };
 
         /// <summary>
