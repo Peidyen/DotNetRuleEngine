@@ -20,22 +20,7 @@ Nuget package available at: [DotNetRuleEngine](https://www.nuget.org/packages/Do
 Get Started at: [DotNetRuleEngine Wiki](https://github.com/ayayalar/DotNetRuleEngine/wiki)
 
 
-#### Model
-
-```csharp
-public class Order
-{
-    public int Id { get; set; }
-    public decimal Total { get; set; }
-    public bool FreeShipping { get; set; }
-}
-
-Order order = new Order { Id = 1, Total = 79.99 };
-```
-
-#### Install DotNetRuleEngine
-```install-package dotnetruleengine```
-
+## Example
 
 #### Create Rule(s)
 
@@ -46,6 +31,7 @@ public class QualifiesForFreeShipping: Rule<Order>
 {   
     public override IRuleResult Invoke()
     {
+        // Order instance available through the model property.
         if (Model.Total > 50.0m)
         {
             Model.FreeShipping = true;
@@ -59,7 +45,22 @@ public class QualifiesForFreeShipping: Rule<Order>
 #### Invoke Rule(s)
 
 ```csharp    
+
+Order order = new Order { Id = 1, Total = 79.99 };
+
+// Pass order instance to RuleEngine.
 var ruleResults = RuleEngine<Order>.GetInstance(order)
     .ApplyRules(new QualifiesForFreeShipping())
     .Execute()
+```
+
+###### Model used as an example
+
+```csharp
+public class Order
+{
+    public int Id { get; set; }
+    public decimal Total { get; set; }
+    public bool FreeShipping { get; set; }
+}
 ```
