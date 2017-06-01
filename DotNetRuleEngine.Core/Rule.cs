@@ -23,6 +23,8 @@ namespace DotNetRuleEngine.Core
 
         public bool IsExceptionHandler { get; set; }
 
+        public bool IsGlobalExceptionHandler { get; set; }
+
         public Exception UnhandledException { get; set; }
 
         public IDependencyResolver Resolve { get; set; }

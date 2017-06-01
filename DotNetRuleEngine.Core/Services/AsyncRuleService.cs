@@ -30,7 +30,7 @@ namespace DotNetRuleEngine.Core.Services
 
         public async Task InvokeAsyncRules()
         {
-            await ExecuteAsyncRules(_rxRuleService.FilterRxRules(_rules));
+            await ExecuteRulesAsync(_rxRuleService.FilterRxRules(_rules));
         }
 
         public async Task<IRuleResult[]> GetAsyncRuleResultsAsync()
@@ -46,7 +46,7 @@ namespace DotNetRuleEngine.Core.Services
             return _asyncRuleResults.ToArray();
         }
 
-        private async Task ExecuteAsyncRules(IList<IRuleAsync<T>> rules)
+        private async Task ExecuteRulesAsync(IList<IRuleAsync<T>> rules)
         {
             await ExecuteParallelRules(rules);
 
@@ -75,9 +75,18 @@ namespace DotNetRuleEngine.Core.Services
                         }
                         else
                         {
+                            var globalExceptionHandler = _rules.GetGlobalExceptionHandler();
+
+                            if (globalExceptionHandler is IRuleAsync<T>)
+                            {
+                                globalExceptionHandler.UnhandledException = exception;
+                                await ExecuteRulesAsync(new List<IRuleAsync<T>> { (IRuleAsync<T>)globalExceptionHandler });
+                            }
+
                             throw;
                         }
                     }
+
                 }
 
                 await InvokeNestedRulesAsync(!rule.Configuration.InvokeNestedRulesFirst, rule);
@@ -155,7 +164,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             if (_rxRuleService.GetReactiveRules().ContainsKey(asyncRule.GetType()))
             {
-                await ExecuteAsyncRules(_rxRuleService.GetReactiveRules()[asyncRule.GetType()]);
+                await ExecuteRulesAsync(_rxRuleService.GetReactiveRules()[asyncRule.GetType()]);
             }
         }
 
@@ -163,7 +172,7 @@ namespace DotNetRuleEngine.Core.Services
         {
             if (_rxRuleService.GetPreactiveRules().ContainsKey(asyncRule.GetType()))
             {
-                await ExecuteAsyncRules(_rxRuleService.GetPreactiveRules()[asyncRule.GetType()]);
+                await ExecuteRulesAsync(_rxRuleService.GetPreactiveRules()[asyncRule.GetType()]);
             }
         }
 
@@ -177,14 +186,14 @@ namespace DotNetRuleEngine.Core.Services
                         return rule;
                     }).ToList();
 
-            await ExecuteAsyncRules(exceptionRules);
+            await ExecuteRulesAsync(exceptionRules);
         }
 
         private async Task InvokeNestedRulesAsync(bool invokeNestedRules, IRuleAsync<T> rule)
         {
             if (invokeNestedRules && rule.IsNested)
             {
-                await ExecuteAsyncRules(_rxRuleService.FilterRxRules(rule.GetRules().OfType<IRuleAsync<T>>().ToList()));
+                await ExecuteRulesAsync(_rxRuleService.FilterRxRules(rule.GetRules().OfType<IRuleAsync<T>>().ToList()));
             }
         }
 

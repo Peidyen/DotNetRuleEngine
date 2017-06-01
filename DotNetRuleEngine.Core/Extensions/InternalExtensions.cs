@@ -58,5 +58,17 @@ namespace DotNetRuleEngine.Core.Extensions
                 .AsParallel()
                 .ToList();
         }
+
+        public static IGeneralRule<T> GetGlobalExceptionHandler<T>(this IEnumerable<IGeneralRule<T>> rules) where T : class, new()
+        {
+            var globalExceptionHandler = rules.Where(r => r.IsGlobalExceptionHandler).ToList();
+
+            if(globalExceptionHandler.Count > 1)
+            {
+                throw new GlobalExceptionHandler("Found multiple GlobalExceptionHandler. Only one can be defined.");
+            }
+
+            return globalExceptionHandler.FirstOrDefault();
+        }
     }
 }

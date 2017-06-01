@@ -61,9 +61,17 @@ namespace DotNetRuleEngine.Core.Services
                         }
                         else
                         {
+                            var globalExceptionHandler = _rules.GetGlobalExceptionHandler();
+
+                            if (globalExceptionHandler is IRule<T>)
+                            {
+                                globalExceptionHandler.UnhandledException = exception;
+                                Execute(new List<IRule<T>> { (IRule<T>)globalExceptionHandler });
+                            }
+
                             throw;
-                        }                        
-                    }                   
+                        }
+                    }
 
                     rule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
 

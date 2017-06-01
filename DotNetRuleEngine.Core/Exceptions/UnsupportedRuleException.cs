@@ -22,4 +22,24 @@ namespace DotNetRuleEngine.Core.Exceptions
         {
         }
     }
+
+    [Serializable]
+    public class GlobalExceptionHandler : Exception
+    {
+        public GlobalExceptionHandler()
+        {
+        }
+
+        public GlobalExceptionHandler(string message) : base(message)
+        {
+        }
+
+        public GlobalExceptionHandler(string message, Exception innerException) : base(message, innerException)
+        {
+        }
+
+        protected GlobalExceptionHandler(SerializationInfo info, StreamingContext context) : base(info, context)
+        {
+        }
+    }
 }
