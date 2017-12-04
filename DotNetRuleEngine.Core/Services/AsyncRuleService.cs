@@ -83,10 +83,12 @@ namespace DotNetRuleEngine.Core.Services
                                 await ExecuteRulesAsync(new List<IRuleAsync<T>> { (IRuleAsync<T>)globalExceptionHandler });
                             }
 
-                            throw;
+                            else
+                            {
+                                throw;
+                            }
                         }
                     }
-
                 }
 
                 await InvokeNestedRulesAsync(!rule.Configuration.InvokeNestedRulesFirst, rule);
@@ -121,7 +123,18 @@ namespace DotNetRuleEngine.Core.Services
                             }
                             else
                             {
-                                throw;
+                                var globalExceptionHandler = _rules.GetGlobalExceptionHandler();
+
+                                if (globalExceptionHandler is IRuleAsync<T>)
+                                {
+                                    globalExceptionHandler.UnhandledException = exception;
+                                    await ExecuteRulesAsync(new List<IRuleAsync<T>> { (IRuleAsync<T>)globalExceptionHandler });
+                                }
+
+                                else
+                                {
+                                    throw;
+                                }
                             }
                         }
 

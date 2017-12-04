@@ -28,11 +28,12 @@ namespace DotNetRuleEngine.Core.Services
 
         public ConcurrentDictionary<Type, IList<TK>> GetExceptionRules() => _exceptionRules.Value;
 
-
-        public IList<TK> FilterRxRules(IList<TK> rules)
-        {
-            return rules.Where(r => !r.IsReactive && !r.IsPreactive && !r.IsExceptionHandler).ToList();
-        }
+        public IList<TK> FilterRxRules(IList<TK> rules) => rules.Where(r =>
+            !r.IsReactive &&
+            !r.IsPreactive &&
+            !r.IsExceptionHandler &&
+            !r.IsGlobalExceptionHandler)
+            .ToList();
 
         private ConcurrentDictionary<Type, IList<TK>> CreatePreactiveRules()
         {

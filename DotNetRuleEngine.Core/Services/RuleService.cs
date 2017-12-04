@@ -68,8 +68,10 @@ namespace DotNetRuleEngine.Core.Services
                                 globalExceptionHandler.UnhandledException = exception;
                                 Execute(new List<IRule<T>> { (IRule<T>)globalExceptionHandler });
                             }
-
-                            throw;
+                            else
+                            {
+                                throw;
+                            }
                         }
                     }
 
