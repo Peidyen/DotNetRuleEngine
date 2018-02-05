@@ -20,7 +20,7 @@ namespace DotNetRuleEngine.Core
 
         public bool IsReactive { get; set; }
 
-        public bool IsPreactive { get; set; }
+        public bool IsProactive { get; set; }
 
         public Type ObserveRule { get; set; }
 

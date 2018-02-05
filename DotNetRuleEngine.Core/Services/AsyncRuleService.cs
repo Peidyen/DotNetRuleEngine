@@ -58,7 +58,7 @@ namespace DotNetRuleEngine.Core.Services
                 {
                     try
                     {
-                        await InvokePreactiveRulesAsync(rule);
+                        await InvokeProactiveRulesAsync(rule);
 
                         AddToAsyncRuleResults(await ExecuteRuleAsync(rule));
                         rule.UpdateRuleEngineConfiguration(_ruleEngineConfiguration);
@@ -101,7 +101,7 @@ namespace DotNetRuleEngine.Core.Services
 
                 if (rule.CanInvoke(_model, _ruleEngineConfiguration.IsRuleEngineTerminated()))
                 {
-                    await InvokePreactiveRulesAsync(rule);
+                    await InvokeProactiveRulesAsync(rule);
 
                     _parallelRuleResults.Add(await Task.Factory.StartNew(async () =>
                     {
@@ -168,11 +168,11 @@ namespace DotNetRuleEngine.Core.Services
             }
         }
 
-        private async Task InvokePreactiveRulesAsync(IRuleAsync<T> asyncRule)
+        private async Task InvokeProactiveRulesAsync(IRuleAsync<T> asyncRule)
         {
-            if (_rxRuleService.GetPreactiveRules().ContainsKey(asyncRule.GetType()))
+            if (_rxRuleService.GetProactiveRules().ContainsKey(asyncRule.GetType()))
             {
-                await ExecuteRulesAsync(_rxRuleService.GetPreactiveRules()[asyncRule.GetType()]);
+                await ExecuteRulesAsync(_rxRuleService.GetProactiveRules()[asyncRule.GetType()]);
             }
         }
 
