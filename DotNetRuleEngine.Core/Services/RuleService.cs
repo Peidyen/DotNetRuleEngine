@@ -36,7 +36,7 @@ namespace DotNetRuleEngine.Core.Services
 
                 if (rule.CanInvoke(_model, _ruleEngineConfiguration.IsRuleEngineTerminated()))
                 {
-                    InvokePreactiveRules(rule);
+                    InvokeProactiveRules(rule);
 
                     try
                     {
@@ -90,11 +90,11 @@ namespace DotNetRuleEngine.Core.Services
             }
         }
 
-        private void InvokePreactiveRules(IRule<T> rule)
+        private void InvokeProactiveRules(IRule<T> rule)
         {
-            if (_rxRuleService.GetPreactiveRules().ContainsKey(rule.GetType()))
+            if (_rxRuleService.GetProactiveRules().ContainsKey(rule.GetType()))
             {
-                Execute(_rxRuleService.GetPreactiveRules()[rule.GetType()].ToList());
+                Execute(_rxRuleService.GetProactiveRules()[rule.GetType()].ToList());
             }
         }
 
